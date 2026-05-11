@@ -9,7 +9,7 @@ private:
 public:
 	void abrir_conexion() {
 		conectar = mysql_init(0);
-		conectar = mysql_real_connect(conectar, "localhost", "root", "MySQL2026#", "super_mercado", 3306, NULL, 0);
+		conectar = mysql_real_connect(conectar, "localhost", "root", "CONTRASEÑA", "super_mercado", 3306, NULL, 0);
 	}
 	MYSQL* get_conexion() {
 		return conectar;

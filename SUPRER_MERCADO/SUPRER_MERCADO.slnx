@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="SUPRER_MERCADO/SUPRER_MERCADO.vcxproj" />
+  <Project Path="SUPRER_MERCADO/SUPRER_MERCADO.vcxproj" Id="fdd131bb-937e-436f-a9f9-a1260a41d43e" />
 </Solution>
