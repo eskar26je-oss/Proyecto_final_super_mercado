@@ -1,21 +1,55 @@
 #pragma once
-#include <mysql.h>	
+#include <mysql.h>
 #include <iostream>
+
 using namespace std;
-class ConexionBD
-{
+
+class ConexionBD {
 private:
-	MYSQL* conectar;
+    MYSQL* conectar;
+
 public:
-	void abrir_conexion() {
-		conectar = mysql_init(0);
-		conectar = mysql_real_connect(conectar, "localhost", "root", "Manuelbase1*", "super_mercado", 3306, NULL, 0);
-	}
-	MYSQL* get_conexion() {
-		return conectar;
-	}
-	void cerrar_conexion() {
-		mysql_close(conectar);
-	}
+    ConexionBD() {
+        conectar = NULL;
+    }
+
+    void abrir_conexion() {
+        conectar = mysql_init(0);
+
+        if (conectar == NULL) {
+            cout << "Error en mysql_init()" << endl;
+            return;
+        }
+
+        conectar = mysql_real_connect(
+            conectar,
+            "localhost",
+            "root",
+            "Manuelbase1*",
+            "super_mercado",
+            3306,
+            NULL,
+            0
+        );
+
+        if (conectar == NULL) {
+            cout << "Error al conectar a la base de datos" << endl;
+            cout << mysql_error(conectar) << endl;
+        }
+        else {
+            cout << "Conexion exitosa" << endl;
+        }
+    }
+
+    MYSQL* get_conexion() {
+        return conectar;
+    }
+
+    void cerrar_conexion() {
+        if (conectar != NULL) {
+            mysql_close(conectar);
+        }
+    }
 };
+
 
