@@ -44,8 +44,9 @@ public:
     void crear() {
         ConexionBD cn;
         cn.abrir_conexion();
+
         if (cn.get_conexion()) {
-            // Tabla 'productos' en minusculas
+
             string consulta = "INSERT INTO productos(productos, id_marca, descripcion, imagen, precio_costo, precio_venta, existencia, fecha_ingreso) VALUES('"
                 + productos + "',"
                 + to_string(id_marca) + ",'"
@@ -54,66 +55,99 @@ public:
                 + to_string(precio_costo) + ","
                 + to_string(precio_venta) + ","
                 + to_string(existencia) + ",'"
-                + fecha_ingreso + "')";
+                + (fecha_ingreso.empty() ? "2026-01-01" : fecha_ingreso) + "')";
 
             int q_estado = mysql_query(cn.get_conexion(), consulta.c_str());
-            if (q_estado == 0) cout << "Producto agregado." << endl;
-            else cout << "Error: " << mysql_error(cn.get_conexion()) << endl;
+
+            if (q_estado == 0)
+                cout << "Producto agregado." << endl;
+            else
+                cout << "Error: " << mysql_error(cn.get_conexion()) << endl;
         }
+
         cn.cerrar_conexion();
     }
 
     void leer() {
         ConexionBD cn;
         cn.abrir_conexion();
+
         if (cn.get_conexion()) {
-            // Tabla 'productos' en minusculas
+
             string consulta = "SELECT * FROM productos";
+
             int q_estado = mysql_query(cn.get_conexion(), consulta.c_str());
+
             if (q_estado == 0) {
+
                 MYSQL_RES* resultado = mysql_store_result(cn.get_conexion());
                 MYSQL_ROW fila;
+
                 while ((fila = mysql_fetch_row(resultado))) {
-                    cout << "ID: " << fila[0] << " | Prod: " << fila[1] << " | Stock: " << fila[7] << endl;
+
+                    cout << "ID: " << fila[0]
+                        << " | Producto: " << fila[1]
+                        << " | Marca ID: " << fila[2]
+                        << " | Precio Venta: " << fila[6]
+                        << " | Existencia: " << fila[7]
+                        << endl;
                 }
+
                 mysql_free_result(resultado);
             }
             else {
                 cout << "Error: " << mysql_error(cn.get_conexion()) << endl;
             }
         }
+
         cn.cerrar_conexion();
     }
 
     void actualizar() {
+
         ConexionBD cn;
         cn.abrir_conexion();
+
         if (cn.get_conexion()) {
-            // Tabla 'productos' en minusculas
+
             string consulta = "UPDATE productos SET productos='" + productos +
                 "', id_marca=" + to_string(id_marca) +
                 ", descripcion='" + descripcion +
-                "', precio_venta=" + to_string(precio_venta) +
+                "', imagen='" + imagen +
+                "', precio_costo=" + to_string(precio_costo) +
+                ", precio_venta=" + to_string(precio_venta) +
                 ", existencia=" + to_string(existencia) +
-                " WHERE idproductos=" + to_string(idproductos);
+                ", fecha_ingreso='" + fecha_ingreso +
+                "' WHERE idproductos=" + to_string(idproductos);
 
             int q_estado = mysql_query(cn.get_conexion(), consulta.c_str());
-            if (q_estado == 0) cout << "Producto actualizado." << endl;
-            else cout << "Error: " << mysql_error(cn.get_conexion()) << endl;
+
+            if (q_estado == 0)
+                cout << "Producto actualizado." << endl;
+            else
+                cout << "Error: " << mysql_error(cn.get_conexion()) << endl;
         }
+
         cn.cerrar_conexion();
     }
 
     void eliminar() {
+
         ConexionBD cn;
         cn.abrir_conexion();
+
         if (cn.get_conexion()) {
-            // Tabla 'productos' en minusculas
+
             string consulta = "DELETE FROM productos WHERE idproductos=" + to_string(idproductos);
+
             int q_estado = mysql_query(cn.get_conexion(), consulta.c_str());
-            if (q_estado == 0) cout << "Producto eliminado." << endl;
-            else cout << "Error: " << mysql_error(cn.get_conexion()) << endl;
+
+            if (q_estado == 0)
+                cout << "Producto eliminado." << endl;
+            else
+                cout << "Error: " << mysql_error(cn.get_conexion()) << endl;
         }
+
         cn.cerrar_conexion();
     }
 };
