@@ -26,7 +26,7 @@ public:
             "localhost",
             "root",
             "MySQL2026#",
-            "super_mercado",
+            "super_mercado_profin",
             3306,
             NULL,
             0
