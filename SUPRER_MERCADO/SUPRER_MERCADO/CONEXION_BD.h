@@ -25,7 +25,7 @@ public:
             conectar,
             "localhost",
             "root",
-            "Manuelbase1*",
+            "MySQL2026#",
             "super_mercado",
             3306,
             NULL,
