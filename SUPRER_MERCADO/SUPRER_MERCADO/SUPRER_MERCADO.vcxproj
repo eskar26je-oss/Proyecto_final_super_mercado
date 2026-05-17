@@ -136,14 +136,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CONEXION_BD.cpp" />
+    <ClCompile Include="Empleados.cpp" />
     <ClCompile Include="MAIN.cpp" />
     <ClCompile Include="marca.cpp" />
     <ClCompile Include="productos.cpp" />
+    <ClCompile Include="Puestos.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CONEXION_BD.h" />
+    <ClInclude Include="Empleados.h" />
     <ClInclude Include="marca.h" />
     <ClInclude Include="productos.h" />
+    <ClInclude Include="Puestos.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
