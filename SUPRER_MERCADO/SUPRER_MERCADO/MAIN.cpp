@@ -8,10 +8,12 @@
 #include "empleados.h"
 #include "marca.h"
 #include "productos.h"
+#include "proveedores.h"
+#include "clientes.h"
 
 using namespace std;
 
-// ================= LIMPIEZA Y LECTURA =================
+// ================= LIMPIEZA =================
 
 void limpiarBuffer() {
     cin.clear();
@@ -51,7 +53,7 @@ double leerDecimal(string mensaje) {
     return valor;
 }
 
-// ================= CONEXION BD =================
+// ================= BD =================
 
 void conectar_bd(MYSQL*& conectar) {
 
@@ -68,28 +70,21 @@ void conectar_bd(MYSQL*& conectar) {
         0
     );
 
-    if (conectar) {
-        cout << "Conexion exitosa\n";
-    }
+    if (conectar) cout << "Conexion exitosa\n";
     else {
         cout << "Error en la conexion\n";
         exit(1);
     }
 }
 
-// ================= MENU PUESTOS =================
+// ================= MENUS =================
 
 void menuPuestos(MYSQL* conectar) {
-
     int opcion;
 
     do {
         cout << "\n===== PUESTOS =====\n";
-        cout << "1. Crear puesto\n";
-        cout << "2. Ver puestos\n";
-        cout << "3. Actualizar puesto\n";
-        cout << "4. Eliminar puesto\n";
-        cout << "0. Regresar\n";
+        cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
 
         opcion = leerEntero("Opcion: ");
 
@@ -102,19 +97,12 @@ void menuPuestos(MYSQL* conectar) {
     } while (opcion != 0);
 }
 
-// ================= MENU EMPLEADOS =================
-
 void menuEmpleados(MYSQL* conectar) {
-
     int opcion;
 
     do {
         cout << "\n===== EMPLEADOS =====\n";
-        cout << "1. Crear empleado\n";
-        cout << "2. Ver empleados\n";
-        cout << "3. Actualizar empleado\n";
-        cout << "4. Eliminar empleado\n";
-        cout << "0. Regresar\n";
+        cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
 
         opcion = leerEntero("Opcion: ");
 
@@ -127,79 +115,57 @@ void menuEmpleados(MYSQL* conectar) {
     } while (opcion != 0);
 }
 
-// ================= MENU MARCAS =================
-
 void menuMarcas() {
-
     int opcion;
+    Marca m;
 
     do {
         cout << "\n===== MARCAS =====\n";
-        cout << "1. Crear marca\n";
-        cout << "2. Ver marcas\n";
-        cout << "3. Actualizar marca\n";
-        cout << "4. Eliminar marca\n";
-        cout << "0. Regresar\n";
+        cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
 
         opcion = leerEntero("Opcion: ");
 
         switch (opcion) {
-        case 1: {
-            Marca m;
-            m.setMarca(leerTexto("Nombre marca: "));
+        case 1:
+            m.setMarca(leerTexto("Marca: "));
             m.crear();
             break;
-        }
-        case 2: {
-            Marca m;
+        case 2:
             m.leer();
             break;
-        }
-        case 3: {
-            Marca m;
-            m.setId_marca(leerEntero("ID marca: "));
+        case 3:
+            m.setId_marca(leerEntero("ID: "));
             m.setMarca(leerTexto("Nuevo nombre: "));
             m.actualizar();
             break;
-        }
-        case 4: {
-            Marca m;
-            m.setId_marca(leerEntero("ID marca: "));
+        case 4:
+            m.setId_marca(leerEntero("ID: "));
             m.eliminar();
             break;
         }
-        }
-
     } while (opcion != 0);
 }
 
-// ================= MENU PRODUCTOS =================
-
 void menuProductos() {
-
     int opcion;
 
     do {
         cout << "\n===== PRODUCTOS =====\n";
-        cout << "1. Crear producto\n";
-        cout << "2. Ver productos\n";
-        cout << "3. Actualizar producto\n";
-        cout << "4. Eliminar producto\n";
-        cout << "0. Regresar\n";
+        cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
 
         opcion = leerEntero("Opcion: ");
 
         switch (opcion) {
         case 1: {
             Producto p;
-            p.setProductos(leerTexto("Nombre producto: "));
-            p.setId_marca(leerEntero("ID marca: "));
+            p.setProductos(leerTexto("Producto: "));
+            p.setId_marca(leerEntero("Marca ID: "));
             p.setDescripcion(leerTexto("Descripcion: "));
             p.setImagen(leerTexto("Imagen: "));
-            p.setPrecio_costo(leerDecimal("Precio costo: "));
-            p.setPrecio_venta(leerDecimal("Precio venta: "));
+            p.setPrecio_costo(leerDecimal("Costo: "));
+            p.setPrecio_venta(leerDecimal("Venta: "));
             p.setExistencia(leerEntero("Existencia: "));
-            p.setFecha_ingreso(leerTexto("Fecha YYYY-MM-DD: "));
+            p.setFecha_ingreso(leerTexto("Fecha: "));
             p.crear();
             break;
         }
@@ -210,13 +176,13 @@ void menuProductos() {
         }
         case 3: {
             Producto p;
-            p.setIdproductos(leerEntero("ID producto: "));
-            p.setProductos(leerTexto("Nuevo producto: "));
-            p.setId_marca(leerEntero("ID marca: "));
-            p.setDescripcion(leerTexto("Descripcion: "));
-            p.setImagen(leerTexto("Imagen: "));
-            p.setPrecio_costo(leerDecimal("Precio costo: "));
-            p.setPrecio_venta(leerDecimal("Precio venta: "));
+            p.setIdproductos(leerEntero("ID: "));
+            p.setProductos(leerTexto("Nuevo: "));
+            p.setId_marca(leerEntero("Marca ID: "));
+            p.setDescripcion(leerTexto("Desc: "));
+            p.setImagen(leerTexto("Img: "));
+            p.setPrecio_costo(leerDecimal("Costo: "));
+            p.setPrecio_venta(leerDecimal("Venta: "));
             p.setExistencia(leerEntero("Existencia: "));
             p.setFecha_ingreso(leerTexto("Fecha: "));
             p.actualizar();
@@ -224,8 +190,123 @@ void menuProductos() {
         }
         case 4: {
             Producto p;
-            p.setIdproductos(leerEntero("ID producto: "));
+            p.setIdproductos(leerEntero("ID: "));
             p.eliminar();
+            break;
+        }
+        }
+    } while (opcion != 0);
+}
+
+// ================= PROVEEDORES (ARREGLADO) =================
+
+void menuProveedores(MYSQL* conectar) {
+
+    int opcion;
+    Proveedor p;
+
+    do {
+        cout << "\n===== PROVEEDORES =====\n";
+        cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
+
+        opcion = leerEntero("Opcion: ");
+
+        switch (opcion) {
+
+        case 1: {
+            string prov = leerTexto("Proveedor: ");
+            string nit = leerTexto("NIT: ");
+            string dir = leerTexto("Direccion: ");
+            string tel = leerTexto("Telefono: ");
+
+            {
+                Proveedor tempP(0, prov, nit, dir, tel);
+                tempP.crear();
+            }
+            break;
+        }
+
+        case 2:
+            p.leer();
+            break;
+
+        case 3: {
+            int id = leerEntero("ID: ");
+            string prov = leerTexto("Proveedor: ");
+            string nit = leerTexto("NIT: ");
+            string dir = leerTexto("Direccion: ");
+            string tel = leerTexto("Telefono: ");
+
+            {
+                Proveedor tempP(id, prov, nit, dir, tel);
+                tempP.actualizar();
+            }
+            break;
+        }
+
+        case 4: {
+            int id = leerEntero("ID: ");
+            {
+                Proveedor tempP(id, "", "", "", "");
+                tempP.eliminar();
+            }
+            break;
+        }
+        }
+
+    } while (opcion != 0);
+}
+
+// ================= CLIENTES =================
+
+void menuClientes() {
+
+    int opcion;
+    Cliente c;
+
+    do {
+        cout << "\n===== CLIENTES =====\n";
+        cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
+
+        opcion = leerEntero("Opcion: ");
+
+        switch (opcion) {
+
+        case 1: {
+            string nom = leerTexto("Nombres: ");
+            string ape = leerTexto("Apellidos: ");
+            string nit = leerTexto("NIT: ");
+            bool gen = leerEntero("Genero (1=M 0=F): ");
+            string tel = leerTexto("Telefono: ");
+            string correo = leerTexto("Correo: ");
+
+            c = Cliente(0, nom, ape, nit, gen, tel, correo, "");
+            c.crear();
+            break;
+        }
+
+        case 2:
+            c.leer();
+            break;
+
+        case 3: {
+            int id = leerEntero("ID: ");
+            string nom = leerTexto("Nombres: ");
+            string ape = leerTexto("Apellidos: ");
+            string nit = leerTexto("NIT: ");
+            bool gen = leerEntero("Genero: ");
+            string tel = leerTexto("Telefono: ");
+            string correo = leerTexto("Correo: ");
+
+            c = Cliente(id, nom, ape, nit, gen, tel, correo, "");
+            c.actualizar();
+            break;
+        }
+
+        case 4: {
+            int id = leerEntero("ID: ");
+            c = Cliente(id, "", "", "", 1, "", "", "");
+            c.eliminar();
             break;
         }
         }
@@ -244,11 +325,7 @@ int main() {
 
     do {
         cout << "\n===== SISTEMA SUPERMERCADO =====\n";
-        cout << "1. Puestos\n";
-        cout << "2. Empleados\n";
-        cout << "3. Marcas\n";
-        cout << "4. Productos\n";
-        cout << "0. Salir\n";
+        cout << "1. Puestos\n2. Empleados\n3. Marcas\n4. Productos\n5. Proveedores\n6. Clientes\n0. Salir\n";
 
         opcion = leerEntero("Opcion: ");
 
@@ -257,11 +334,12 @@ int main() {
         case 2: menuEmpleados(conectar); break;
         case 3: menuMarcas(); break;
         case 4: menuProductos(); break;
+        case 5: menuProveedores(conectar); break;
+        case 6: menuClientes(); break;
         }
 
     } while (opcion != 0);
 
     mysql_close(conectar);
-
     return 0;
 }
