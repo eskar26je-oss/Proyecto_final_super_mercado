@@ -2,174 +2,493 @@
 #include <mysql.h>
 #include <iostream>
 #include <string>
+#include <limits>
+
+#include "validaciones.h"
 
 using namespace std;
 
-
 void mostrar_puestos(MYSQL* conectar);
 
+// ================= STRUCT =================
 struct Empleados {
 
-	int id_empleados;
-	char nombres[60];
-	char apellidos[60];
-	char direccion[80];
-	char telefono[9];
-	char cui[14];
-	int genero;
-	char fecha_nacimiento[11];
-	int id_puesto;
-	char fecha_inicio_de_labores[11];
-	char fecha_ingreso[11];
+    int id_empleados;
+    char nombres[60];
+    char apellidos[60];
+    char direccion[80];
+    char telefono[9];
+    char cui[14];
+    int genero;
+    char fecha_nacimiento[11];
+    int id_puesto;
+    char fecha_inicio_de_labores[11];
+    char fecha_ingreso[11];
 };
+
+// ================= FUNCIONES AUXILIARES =================
+inline void limpiar_buffer() {
+
+    cin.clear();
+    cin.ignore((numeric_limits<streamsize>::max)(), '\n');
+}
+
+inline int leer_entero(string mensaje) {
+
+    string texto;
+    int numero;
+
+    while (true) {
+
+        cout << mensaje;
+        getline(cin, texto);
+
+        if (!solo_numeros(texto)) {
+
+            cout << "Ingrese solo numeros.\n";
+            continue;
+        }
+
+        numero = stoi(texto);
+
+        return numero;
+    }
+}
 
 // ================= CREATE =================
 inline void crear_empleados(MYSQL* conectar) {
 
-	Empleados empleados;
-	char respuesta;
+    Empleados empleados;
+    string entrada;
+    char respuesta;
 
-	do {
+    do {
 
-		cout << "Ingrese nombres: ";
-		cin.getline(empleados.nombres, 60);
+        // ================= NOMBRES =================
+        do {
 
-		cout << "Ingrese apellidos: ";
-		cin.getline(empleados.apellidos, 60);
+            cout << "Ingrese nombres: ";
+            getline(cin, entrada);
 
-		cout << "Ingrese direccion: ";
-		cin.getline(empleados.direccion, 80);
+            if (!validar_nombre(entrada, 60)) {
 
-		cout << "Ingrese telefono: ";
-		cin.getline(empleados.telefono, 9);
+                cout << "Nombre invalido. Solo letras y espacios.\n";
+            }
 
-		cout << "Ingrese CUI: ";
-		cin.getline(empleados.cui, 14);
+        } while (!validar_nombre(entrada, 60));
 
-		cout << "Genero (0/1): ";
-		cin >> empleados.genero;
-		cin.ignore();
+        strcpy_s(
+            empleados.nombres,
+            sizeof(empleados.nombres),
+            entrada.c_str()
+        );
 
-		cout << "Fecha nacimiento: ";
-		cin.getline(empleados.fecha_nacimiento, 11);
+        // ================= APELLIDOS =================
+        do {
 
-		mostrar_puestos(conectar);
+            cout << "Ingrese apellidos: ";
+            getline(cin, entrada);
 
-		cout << "ID puesto: ";
-		cin >> empleados.id_puesto;
-		cin.ignore();
+            if (!validar_nombre(entrada, 60)) {
 
-		cout << "Fecha inicio: ";
-		cin.getline(empleados.fecha_inicio_de_labores, 11);
+                cout << "Apellidos invalidos.\n";
+            }
 
-		cout << "Fecha ingreso: ";
-		cin.getline(empleados.fecha_ingreso, 11);
+        } while (!validar_nombre(entrada, 60));
 
-		string consulta =
-			"INSERT INTO empleados(nombres, apellidos, direccion, telefono, cui, genero, "
-			"fecha_nacimiento, id_puesto, fecha_inicio_de_labores, fecha_ingreso) VALUES('";
+        strcpy_s(
+            empleados.apellidos,
+            sizeof(empleados.apellidos),
+            entrada.c_str()
+        );
 
-		consulta += string(empleados.nombres) + "','";
-		consulta += string(empleados.apellidos) + "','";
-		consulta += string(empleados.direccion) + "','";
-		consulta += string(empleados.telefono) + "','";
-		consulta += string(empleados.cui) + "',";
-		consulta += to_string(empleados.genero) + ",'";
-		consulta += string(empleados.fecha_nacimiento) + "',";
-		consulta += to_string(empleados.id_puesto) + ",'";
-		consulta += string(empleados.fecha_inicio_de_labores) + "','";
-		consulta += string(empleados.fecha_ingreso) + "')";
+        // ================= DIRECCION =================
+        do {
 
-		mysql_query(conectar, consulta.c_str());
+            cout << "Ingrese direccion: ";
+            getline(cin, entrada);
 
-		cout << "Empleado agregado\n";
+            if (!validar_direccion(entrada, 80)) {
 
-		cout << "Otro? (s/n): ";
-		cin >> respuesta;
-		cin.ignore();
+                cout << "Direccion invalida.\n";
+            }
 
-	} while (respuesta == 's' || respuesta == 'S');
+        } while (!validar_direccion(entrada, 80));
+
+        strcpy_s(
+            empleados.direccion,
+            sizeof(empleados.direccion),
+            entrada.c_str()
+        );
+
+        // ================= TELEFONO =================
+        do {
+
+            cout << "Ingrese telefono (8 digitos): ";
+            getline(cin, entrada);
+
+            if (!validar_telefono_gt(entrada)) {
+
+                cout << "Telefono invalido.\n";
+            }
+
+        } while (!validar_telefono_gt(entrada));
+
+        strcpy_s(
+            empleados.telefono,
+            sizeof(empleados.telefono),
+            entrada.c_str()
+        );
+
+        // ================= CUI =================
+        do {
+
+            cout << "Ingrese CUI (13 digitos): ";
+            getline(cin, entrada);
+
+            if (!validar_cui(entrada)) {
+
+                cout << "CUI invalido.\n";
+            }
+
+        } while (!validar_cui(entrada));
+
+        strcpy_s(
+            empleados.cui,
+            sizeof(empleados.cui),
+            entrada.c_str()
+        );
+
+        // ================= GENERO =================
+        do {
+
+            empleados.genero =
+                leer_entero(
+                    "Genero (0=Femenino, 1=Masculino): "
+                );
+
+            if (!validar_genero(empleados.genero)) {
+
+                cout << "Genero invalido.\n";
+            }
+
+        } while (!validar_genero(empleados.genero));
+
+        // ================= FECHA NACIMIENTO =================
+        do {
+
+            cout << "Fecha nacimiento (YYYY-MM-DD): ";
+            getline(cin, entrada);
+
+            if (!validar_fecha(entrada)) {
+
+                cout << "Fecha invalida.\n";
+            }
+
+        } while (!validar_fecha(entrada));
+
+        strcpy_s(
+            empleados.fecha_nacimiento,
+            sizeof(empleados.fecha_nacimiento),
+            entrada.c_str()
+        );
+
+        // ================= MOSTRAR PUESTOS =================
+        mostrar_puestos(conectar);
+
+        // ================= ID PUESTO =================
+        do {
+
+            empleados.id_puesto =
+                leer_entero("ID puesto: ");
+
+            if (!validar_id(empleados.id_puesto)) {
+
+                cout << "ID invalido.\n";
+            }
+
+        } while (!validar_id(empleados.id_puesto));
+
+        // ================= FECHA INICIO =================
+        do {
+
+            cout << "Fecha inicio labores (YYYY-MM-DD): ";
+            getline(cin, entrada);
+
+            if (!validar_fecha(entrada)) {
+
+                cout << "Fecha invalida.\n";
+            }
+
+        } while (!validar_fecha(entrada));
+
+        strcpy_s(
+            empleados.fecha_inicio_de_labores,
+            sizeof(empleados.fecha_inicio_de_labores),
+            entrada.c_str()
+        );
+
+        // ================= FECHA INGRESO =================
+        do {
+
+            cout << "Fecha ingreso (YYYY-MM-DD): ";
+            getline(cin, entrada);
+
+            if (!validar_fecha(entrada)) {
+
+                cout << "Fecha invalida.\n";
+            }
+
+        } while (!validar_fecha(entrada));
+
+        strcpy_s(
+            empleados.fecha_ingreso,
+            sizeof(empleados.fecha_ingreso),
+            entrada.c_str()
+        );
+
+        // ================= QUERY =================
+        string consulta =
+            "INSERT INTO empleados("
+            "nombres,"
+            "apellidos,"
+            "direccion,"
+            "telefono,"
+            "cui,"
+            "genero,"
+            "fecha_nacimiento,"
+            "id_puesto,"
+            "fecha_inicio_de_labores,"
+            "fecha_ingreso"
+            ") VALUES('";
+
+        consulta += string(empleados.nombres) + "','";
+        consulta += string(empleados.apellidos) + "','";
+        consulta += string(empleados.direccion) + "','";
+        consulta += string(empleados.telefono) + "','";
+        consulta += string(empleados.cui) + "',";
+        consulta += to_string(empleados.genero) + ",'";
+        consulta += string(empleados.fecha_nacimiento) + "',";
+        consulta += to_string(empleados.id_puesto) + ",'";
+        consulta += string(empleados.fecha_inicio_de_labores) + "','";
+        consulta += string(empleados.fecha_ingreso) + "')";
+
+        int estado =
+            mysql_query(
+                conectar,
+                consulta.c_str()
+            );
+
+        if (estado == 0) {
+
+            cout << "Empleado agregado correctamente.\n";
+        }
+        else {
+
+            cout << "Error: "
+                << mysql_error(conectar)
+                << endl;
+        }
+
+        cout << "Desea agregar otro? (s/n): ";
+
+        cin >> respuesta;
+        limpiar_buffer();
+
+    } while (
+        respuesta == 's' ||
+        respuesta == 'S'
+        );
 }
 
 // ================= READ =================
 inline void mostrar_empleados(MYSQL* conectar) {
 
-	MYSQL_ROW fila;
-	MYSQL_RES* resultado;
+    MYSQL_ROW fila;
+    MYSQL_RES* resultado;
 
-	string consulta =
-		"SELECT e.id_empleados, e.nombres, e.apellidos, p.puesto "
-		"FROM empleados e INNER JOIN puestos p ON e.id_puesto = p.id_puestos";
+    string consulta =
+        "SELECT e.id_empleados, "
+        "e.nombres, "
+        "e.apellidos, "
+        "p.puesto "
+        "FROM empleados e "
+        "INNER JOIN puestos p "
+        "ON e.id_puesto = p.id_puestos";
 
-	mysql_query(conectar, consulta.c_str());
+    mysql_query(
+        conectar,
+        consulta.c_str()
+    );
 
-	resultado = mysql_store_result(conectar);
+    resultado =
+        mysql_store_result(conectar);
 
-	while ((fila = mysql_fetch_row(resultado))) {
+    while (
+        (fila = mysql_fetch_row(resultado))
+        ) {
 
-		cout << "ID: " << fila[0]
-			<< " | Nombre: " << fila[1] << " " << fila[2]
-			<< " | Puesto: " << fila[3] << endl;
-	}
+        cout
+            << "ID: " << fila[0]
+            << " | Nombre: "
+            << fila[1]
+            << " "
+            << fila[2]
+            << " | Puesto: "
+            << fila[3]
+            << endl;
+    }
+
+    mysql_free_result(resultado);
 }
 
 // ================= UPDATE =================
 inline void actualizar_empleados(MYSQL* conectar) {
 
-	Empleados e;
+    Empleados e;
+    string entrada;
 
-	cout << "ID: ";
-	cin >> e.id_empleados;
-	cin.ignore();
+    do {
 
-	cout << "Nuevo nombre: ";
-	cin.getline(e.nombres, 60);
+        e.id_empleados =
+            leer_entero(
+                "ID empleado: "
+            );
 
-	string consulta =
-		"UPDATE empleados SET nombres='" + string(e.nombres) +
-		"' WHERE id_empleados=" + to_string(e.id_empleados);
+        if (!validar_id(e.id_empleados)) {
 
-	mysql_query(conectar, consulta.c_str());
+            cout << "ID invalido.\n";
+        }
 
-	cout << "Actualizado\n";
+    } while (!validar_id(e.id_empleados));
+
+    do {
+
+        cout << "Nuevo nombre: ";
+        getline(cin, entrada);
+
+        if (!validar_nombre(entrada, 60)) {
+
+            cout << "Nombre invalido.\n";
+        }
+
+    } while (!validar_nombre(entrada, 60));
+
+    strcpy_s(
+        e.nombres,
+        sizeof(e.nombres),
+        entrada.c_str()
+    );
+
+    string consulta =
+        "UPDATE empleados SET nombres='"
+        + string(e.nombres)
+        + "' WHERE id_empleados="
+        + to_string(e.id_empleados);
+
+    int estado =
+        mysql_query(
+            conectar,
+            consulta.c_str()
+        );
+
+    if (estado == 0) {
+
+        cout << "Empleado actualizado correctamente.\n";
+    }
+    else {
+
+        cout << "Error: "
+            << mysql_error(conectar)
+            << endl;
+    }
 }
 
 // ================= DELETE =================
 inline void eliminar_empleados(MYSQL* conectar) {
 
-	int id;
+    int id;
 
-	cout << "ID eliminar: ";
-	cin >> id;
+    do {
 
-	string consulta =
-		"DELETE FROM empleados WHERE id_empleados=" + to_string(id);
+        id =
+            leer_entero(
+                "ID eliminar: "
+            );
 
-	mysql_query(conectar, consulta.c_str());
+        if (!validar_id(id)) {
 
-	cout << "Eliminado\n";
+            cout << "ID invalido.\n";
+        }
+
+    } while (!validar_id(id));
+
+    string consulta =
+        "DELETE FROM empleados "
+        "WHERE id_empleados="
+        + to_string(id);
+
+    int estado =
+        mysql_query(
+            conectar,
+            consulta.c_str()
+        );
+
+    if (estado == 0) {
+
+        cout << "Empleado eliminado correctamente.\n";
+    }
+    else {
+
+        cout << "Error: "
+            << mysql_error(conectar)
+            << endl;
+    }
 }
 
 // ================= MENU =================
 inline void menu_empleados(MYSQL* conectar) {
 
-	int opcion;
+    int opcion;
 
-	do {
+    do {
 
-		cout << "\n===== EMPLEADOS =====\n";
-		cout << "1. Crear\n2. Mostrar\n3. Actualizar\n4. Eliminar\n5. Salir\n";
-		cout << "Opcion: ";
-		cin >> opcion;
-		cin.ignore();
+        opcion =
+            leer_entero(
+                "\n===== EMPLEADOS =====\n"
+                "1. Crear\n"
+                "2. Mostrar\n"
+                "3. Actualizar\n"
+                "4. Eliminar\n"
+                "5. Salir\n"
+                "Opcion: "
+            );
 
-		switch (opcion) {
+        switch (opcion) {
 
-		case 1: crear_empleados(conectar); break;
-		case 2: mostrar_empleados(conectar); break;
-		case 3: actualizar_empleados(conectar); break;
-		case 4: eliminar_empleados(conectar); break;
-		}
+        case 1:
+            crear_empleados(conectar);
+            break;
 
-	} while (opcion != 5);
+        case 2:
+            mostrar_empleados(conectar);
+            break;
+
+        case 3:
+            actualizar_empleados(conectar);
+            break;
+
+        case 4:
+            eliminar_empleados(conectar);
+            break;
+
+        case 5:
+            cout << "Saliendo...\n";
+            break;
+
+        default:
+            cout << "Opcion invalida.\n";
+        }
+
+    } while (opcion != 5);
 }

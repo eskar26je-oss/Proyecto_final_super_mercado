@@ -62,5 +62,8 @@
     <ClInclude Include="Proveedores.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Proyecto_final_super_mercado - copia\SUPRER_MERCADO\SUPRER_MERCADO\validaciones.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
