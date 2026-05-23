@@ -79,6 +79,9 @@ void conectar_bd(MYSQL*& conectar) {
 
 // ================= MENUS =================
 
+
+// ================= PUESTOS  =================
+
 void menuPuestos(MYSQL* conectar) {
     int opcion;
 
@@ -97,6 +100,7 @@ void menuPuestos(MYSQL* conectar) {
     } while (opcion != 0);
 }
 
+// ================= EMPLEADOS  =================
 void menuEmpleados(MYSQL* conectar) {
     int opcion;
 
@@ -115,6 +119,7 @@ void menuEmpleados(MYSQL* conectar) {
     } while (opcion != 0);
 }
 
+// ================= MARCAS =================
 void menuMarcas() {
     int opcion;
     Marca m;
@@ -146,6 +151,7 @@ void menuMarcas() {
     } while (opcion != 0);
 }
 
+// ================= PRODUCTOS =================
 void menuProductos() {
     int opcion;
 
@@ -198,7 +204,7 @@ void menuProductos() {
     } while (opcion != 0);
 }
 
-// ================= PROVEEDORES (ARREGLADO) =================
+// ================= PROVEEDORES  =================
 
 void menuProveedores(MYSQL* conectar) {
 
