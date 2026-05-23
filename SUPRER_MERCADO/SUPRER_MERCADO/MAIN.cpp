@@ -3,6 +3,7 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <iomanip>
 #include <mysql.h>
 
 #include "puestos.h"
@@ -12,6 +13,8 @@
 #include "proveedores.h"
 #include "clientes.h"
 #include "validaciones.h"
+#include "VentasMaestroDetalle.h"
+#include "ComprasMaestroDetalle.h"
 
 using namespace std;
 
@@ -150,7 +153,6 @@ void conectar_bd(MYSQL*& conectar) {
         exit(1);
     }
 }
-
 
 // ================= PUESTOS =================
 
@@ -832,6 +834,331 @@ void menuClientes() {
     } while (opcion != 0);
 }
 
+// ================= VENTAS =================
+
+void menuVentas() {
+
+    int opcion;
+
+    do {
+
+        cout << "\n===== VENTAS =====\n";
+        cout << "1. Nueva Venta\n";
+        cout << "2. Ver todas las Ventas\n";
+        cout << "3. Ver Detalle de una Venta\n";
+        cout << "4. Eliminar Venta\n";
+        cout << "0. Regresar\n";
+
+        opcion = leerEntero("Opcion: ");
+
+        switch (opcion) {
+
+        case 1: {
+
+            VentasMaestroDetalle venta;
+
+            cout << "\n--- NUEVA VENTA ---\n";
+
+            venta.SetIdVenta(
+                leerEnteroPositivo("ID de la venta: ")
+            );
+
+            venta.SetNoFactura(
+                leerEnteroPositivo("No. Factura: ")
+            );
+
+            string serieStr = leerTexto("Serie: ");
+
+            venta.SetSerie(
+                serieStr.empty() ? 'A' : serieStr[0]
+            );
+
+            string fechaF = leerTextoValidado(
+                "Fecha factura (YYYY-MM-DD): ",
+                validar_fecha,
+                "Fecha invalida"
+            );
+
+            venta.SetFechaFactura(fechaF);
+
+            int idCli = leerEnteroPositivo("ID Cliente: ");
+            string nomCli = leerTexto("Nombre Cliente: ");
+
+            venta.SetCliente(idCli, nomCli);
+
+            int idEmp = leerEnteroPositivo("ID Empleado: ");
+            string nomEmp = leerTexto("Nombre Empleado: ");
+
+            venta.SetEmpleado(idEmp, nomEmp);
+
+            int opDet;
+
+            do {
+
+                cout << "\n--- DETALLE VENTA ---\n";
+                cout << "1. Agregar producto\n";
+                cout << "2. Modificar linea\n";
+                cout << "3. Eliminar linea\n";
+                cout << "4. Ver resumen\n";
+                cout << "5. Guardar venta\n";
+                cout << "0. Cancelar\n";
+
+                opDet = leerEntero("Opcion: ");
+
+                switch (opDet) {
+
+                case 1: {
+
+                    int idProd = leerEnteroPositivo("ID Producto: ");
+                    string nomProd = leerTexto("Nombre producto: ");
+                    int cant = leerEnteroPositivo("Cantidad: ");
+                    double precio = leerDecimalPositivo("Precio: ");
+
+                    venta.AgregarDetalle(
+                        idProd,
+                        nomProd,
+                        cant,
+                        precio
+                    );
+
+                    cout << "Total actual: Q"
+                        << fixed << setprecision(2)
+                        << venta.GetTotal() << endl;
+
+                    break;
+                }
+
+                case 2: {
+
+                    venta.MostrarResumen();
+
+                    int idx = leerEnteroPositivo("Linea: ") - 1;
+                    int cant = leerEnteroPositivo("Nueva cantidad: ");
+                    double pr = leerDecimalPositivo("Nuevo precio: ");
+
+                    if (venta.ModificarDetalle(idx, cant, pr))
+                        cout << "Linea modificada\n";
+                    else
+                        cout << "Indice invalido\n";
+
+                    break;
+                }
+
+                case 3: {
+
+                    venta.MostrarResumen();
+
+                    int idx = leerEnteroPositivo("Linea: ") - 1;
+
+                    if (venta.EliminarDetalle(idx))
+                        cout << "Linea eliminada\n";
+                    else
+                        cout << "Indice invalido\n";
+
+                    break;
+                }
+
+                case 4:
+
+                    venta.MostrarResumen();
+                    break;
+
+                case 5:
+
+                    venta.MostrarResumen();
+                    venta.GuardarEnBD();
+                    opDet = 0;
+                    break;
+                }
+
+            } while (opDet != 0);
+
+            break;
+        }
+
+        case 2:
+
+            VentasMaestroDetalle::ConsultarVentas();
+            break;
+
+        case 3: {
+
+            int id = leerEnteroPositivo("ID Venta: ");
+
+            VentasMaestroDetalle::ConsultarDetalleVenta(id);
+            break;
+        }
+
+        case 4: {
+
+            int id = leerEnteroPositivo("ID Venta eliminar: ");
+
+            VentasMaestroDetalle::EliminarVenta(id);
+            break;
+        }
+
+        }
+
+    } while (opcion != 0);
+}
+
+// ================= COMPRAS =================
+
+void menuCompras() {
+
+    int opcion;
+
+    do {
+
+        cout << "\n===== COMPRAS =====\n";
+        cout << "1. Nueva Compra\n";
+        cout << "2. Ver todas las Compras\n";
+        cout << "3. Ver Detalle Compra\n";
+        cout << "4. Eliminar Compra\n";
+        cout << "0. Regresar\n";
+
+        opcion = leerEntero("Opcion: ");
+
+        switch (opcion) {
+
+        case 1: {
+
+            ComprasMaestroDetalle compra;
+
+            cout << "\n--- NUEVA COMPRA ---\n";
+
+            compra.SetIdCompra(
+                leerEnteroPositivo("ID Compra: ")
+            );
+
+            compra.SetNumeroOrden(
+                leerEnteroPositivo("No. Orden: ")
+            );
+
+            string fechaO = leerTextoValidado(
+                "Fecha orden: ",
+                validar_fecha,
+                "Fecha invalida"
+            );
+
+            compra.SetFechaOrden(fechaO);
+
+            int idProv = leerEnteroPositivo("ID Proveedor: ");
+            string nomProv = leerTexto("Nombre proveedor: ");
+
+            compra.SetProveedor(idProv, nomProv);
+
+            int opDet;
+
+            do {
+
+                cout << "\n--- DETALLE COMPRA ---\n";
+                cout << "1. Agregar producto\n";
+                cout << "2. Modificar linea\n";
+                cout << "3. Eliminar linea\n";
+                cout << "4. Ver resumen\n";
+                cout << "5. Guardar compra\n";
+                cout << "0. Cancelar\n";
+
+                opDet = leerEntero("Opcion: ");
+
+                switch (opDet) {
+
+                case 1: {
+
+                    int idProd = leerEnteroPositivo("ID Producto: ");
+                    string nomProd = leerTexto("Nombre producto: ");
+                    int cant = leerEnteroPositivo("Cantidad: ");
+                    double costo = leerDecimalPositivo("Costo: ");
+
+                    compra.AgregarDetalle(
+                        idProd,
+                        nomProd,
+                        cant,
+                        costo
+                    );
+
+                    cout << "Total actual: Q"
+                        << fixed << setprecision(2)
+                        << compra.GetTotal() << endl;
+
+                    break;
+                }
+
+                case 2: {
+
+                    compra.MostrarResumen();
+
+                    int idx = leerEnteroPositivo("Linea: ") - 1;
+                    int cant = leerEnteroPositivo("Nueva cantidad: ");
+                    double costo = leerDecimalPositivo("Nuevo costo: ");
+
+                    if (compra.ModificarDetalle(idx, cant, costo))
+                        cout << "Linea modificada\n";
+                    else
+                        cout << "Indice invalido\n";
+
+                    break;
+                }
+
+                case 3: {
+
+                    compra.MostrarResumen();
+
+                    int idx = leerEnteroPositivo("Linea: ") - 1;
+
+                    if (compra.EliminarDetalle(idx))
+                        cout << "Linea eliminada\n";
+                    else
+                        cout << "Indice invalido\n";
+
+                    break;
+                }
+
+                case 4:
+
+                    compra.MostrarResumen();
+                    break;
+
+                case 5:
+
+                    compra.MostrarResumen();
+                    compra.GuardarEnBD();
+                    opDet = 0;
+                    break;
+                }
+
+            } while (opDet != 0);
+
+            break;
+        }
+
+        case 2:
+
+            ComprasMaestroDetalle::ConsultarCompras();
+            break;
+
+        case 3: {
+
+            int id = leerEnteroPositivo("ID Compra: ");
+
+            ComprasMaestroDetalle::ConsultarDetalleCompra(id);
+            break;
+        }
+
+        case 4: {
+
+            int id = leerEnteroPositivo("ID Compra eliminar: ");
+
+            ComprasMaestroDetalle::EliminarCompra(id);
+            break;
+        }
+
+        }
+
+    } while (opcion != 0);
+}
+
 // ================= MAIN =================
 
 int main() {
@@ -844,7 +1171,15 @@ int main() {
     do {
 
         cout << "\n===== SISTEMA SUPERMERCADO =====\n";
-        cout << "1. Puestos\n2. Empleados\n3. Marcas\n4. Productos\n5. Proveedores\n6. Clientes\n0. Salir\n";
+        cout << "1. Puestos\n";
+        cout << "2. Empleados\n";
+        cout << "3. Marcas\n";
+        cout << "4. Productos\n";
+        cout << "5. Proveedores\n";
+        cout << "6. Clientes\n";
+        cout << "7. Ventas\n";
+        cout << "8. Compras\n";
+        cout << "0. Salir\n";
 
         opcion = leerEntero("Opcion: ");
 
@@ -872,6 +1207,14 @@ int main() {
 
         case 6:
             menuClientes();
+            break;
+
+        case 7:
+            menuVentas();
+            break;
+
+        case 8:
+            menuCompras();
             break;
         }
 
