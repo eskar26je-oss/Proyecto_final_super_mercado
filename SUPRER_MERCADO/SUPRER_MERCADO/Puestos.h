@@ -6,40 +6,30 @@
 using namespace std;
 
 struct Puestos {
+
 	int id_puestos;
 	char puesto[50];
 };
 
-// CREATE
-inline void crear_puestos(MYSQL* conectar) {
+// ================= CREATE =================
+inline void crear_puestos(
+	MYSQL* conectar,
+	string puesto
+) {
 
-	Puestos p;
-	char respuesta;
+	string consulta =
+		"INSERT INTO puestos(puesto) VALUES('" +
+		puesto + "')";
 
-	do {
+	int estado = mysql_query(conectar, consulta.c_str());
 
-		cout << "Ingrese nombre del puesto: ";
-		cin.getline(p.puesto, 50);
-
-		string consulta =
-			"INSERT INTO puestos(puesto) VALUES('" +
-			string(p.puesto) + "')";
-
-		int estado = mysql_query(conectar, consulta.c_str());
-
-		if (estado == 0)
-			cout << "Puesto ingresado correctamente\n";
-		else
-			cout << "Error: " << mysql_error(conectar) << endl;
-
-		cout << "Desea ingresar otro puesto? (s/n): ";
-		cin >> respuesta;
-		cin.ignore();
-
-	} while (respuesta == 's' || respuesta == 'S');
+	if (estado == 0)
+		cout << "Puesto ingresado correctamente\n";
+	else
+		cout << "Error: " << mysql_error(conectar) << endl;
 }
 
-// READ
+// ================= READ =================
 inline void mostrar_puestos(MYSQL* conectar) {
 
 	MYSQL_ROW fila;
@@ -63,23 +53,18 @@ inline void mostrar_puestos(MYSQL* conectar) {
 	mysql_free_result(resultado);
 }
 
-// UPDATE
-inline void actualizar_puestos(MYSQL* conectar) {
-
-	Puestos p;
-
-	cout << "Ingrese ID del puesto a modificar: ";
-	cin >> p.id_puestos;
-	cin.ignore();
-
-	cout << "Ingrese nuevo nombre del puesto: ";
-	cin.getline(p.puesto, 50);
+// ================= UPDATE =================
+inline void actualizar_puestos(
+	MYSQL* conectar,
+	int id_puestos,
+	string puesto
+) {
 
 	string consulta =
 		"UPDATE puestos SET puesto = '" +
-		string(p.puesto) +
+		puesto +
 		"' WHERE id_puestos = " +
-		to_string(p.id_puestos);
+		to_string(id_puestos);
 
 	int estado = mysql_query(conectar, consulta.c_str());
 
@@ -89,13 +74,11 @@ inline void actualizar_puestos(MYSQL* conectar) {
 		cout << "Error: " << mysql_error(conectar) << endl;
 }
 
-// DELETE
-inline void eliminar_puestos(MYSQL* conectar) {
-
-	int id;
-
-	cout << "Ingrese ID del puesto a eliminar: ";
-	cin >> id;
+// ================= DELETE =================
+inline void eliminar_puestos(
+	MYSQL* conectar,
+	int id
+) {
 
 	string consulta =
 		"DELETE FROM puestos WHERE id_puestos = " +
@@ -107,44 +90,4 @@ inline void eliminar_puestos(MYSQL* conectar) {
 		cout << "Puesto eliminado correctamente\n";
 	else
 		cout << "Error: " << mysql_error(conectar) << endl;
-}
-
-// MENU
-inline void menu_puestos(MYSQL* conectar) {
-
-	int opcion;
-
-	do {
-
-		cout << "\n===== CRUD PUESTOS =====\n";
-		cout << "1. Crear Puesto\n";
-		cout << "2. Mostrar Puestos\n";
-		cout << "3. Actualizar Puesto\n";
-		cout << "4. Eliminar Puesto\n";
-		cout << "5. Salir\n";
-		cout << "Seleccione una opcion: ";
-
-		cin >> opcion;
-		cin.ignore();
-
-		switch (opcion) {
-
-		case 1:
-			crear_puestos(conectar);
-			break;
-
-		case 2:
-			mostrar_puestos(conectar);
-			break;
-
-		case 3:
-			actualizar_puestos(conectar);
-			break;
-
-		case 4:
-			eliminar_puestos(conectar);
-			break;
-		}
-
-	} while (opcion != 5);
 }
