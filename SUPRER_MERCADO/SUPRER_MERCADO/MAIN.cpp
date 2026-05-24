@@ -10,6 +10,7 @@
 #include "productos.h"
 #include "proveedores.h"
 #include "clientes.h"
+#include "ventas.h"
 
 using namespace std;
 
@@ -63,7 +64,7 @@ void conectar_bd(MYSQL*& conectar) {
         conectar,
         "localhost",
         "root",
-        "MySQL2026#",
+        "0111",
         "super_mercado_profin",
         3306,
         NULL,
@@ -325,7 +326,7 @@ int main() {
 
     do {
         cout << "\n===== SISTEMA SUPERMERCADO =====\n";
-        cout << "1. Puestos\n2. Empleados\n3. Marcas\n4. Productos\n5. Proveedores\n6. Clientes\n0. Salir\n";
+        cout << "1. Puestos\n2. Empleados\n3. Marcas\n4. Productos\n5. Proveedores\n6. Clientes\n7. Ventas\n0. Salir\n";
 
         opcion = leerEntero("Opcion: ");
 
@@ -336,6 +337,8 @@ int main() {
         case 4: menuProductos(); break;
         case 5: menuProveedores(conectar); break;
         case 6: menuClientes(); break;
+        case 7: menu_ventas(conectar); break;
+            
         }
 
     } while (opcion != 0);

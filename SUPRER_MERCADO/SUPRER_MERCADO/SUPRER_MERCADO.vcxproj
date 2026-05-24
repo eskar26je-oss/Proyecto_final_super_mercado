@@ -152,6 +152,7 @@
     <ClInclude Include="productos.h" />
     <ClInclude Include="Proveedores.h" />
     <ClInclude Include="Puestos.h" />
+    <ClInclude Include="ventas.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
