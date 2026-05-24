@@ -39,13 +39,11 @@ int leerEntero(string mensaje) {
 
     int valor;
     cout << mensaje;
-
     while (!(cin >> valor)) {
 
         cout << "Ingrese un numero valido: ";
         limpiarBuffer();
     }
-
     limpiarBuffer();
     return valor;
 }
@@ -54,13 +52,11 @@ double leerDecimal(string mensaje) {
 
     double valor;
     cout << mensaje;
-
     while (!(cin >> valor)) {
 
         cout << "Ingrese un decimal valido: ";
         limpiarBuffer();
     }
-
     limpiarBuffer();
     return valor;
 }
@@ -129,18 +125,14 @@ double leerDecimalPositivo(string mensaje) {
 // ================= BD =================
 
 void conectar_bd(MYSQL*& conectar) {
-
     conectar = mysql_init(0);
-
     conectar = mysql_real_connect(
         conectar,
         "localhost",
         "root",
         "MySQL2026#",
         "super_mercado_profin",
-        3306,
-        NULL,
-        0
+        3306, NULL, 0
     );
 
     if (conectar) {
@@ -159,14 +151,11 @@ void conectar_bd(MYSQL*& conectar) {
 void menuPuestos(MYSQL* conectar) {
 
     int opcion;
-
     do {
 
         cout << "\n===== PUESTOS =====\n";
         cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
-
         opcion = leerEntero("Opcion: ");
-
         switch (opcion) {
 
         case 1: {
@@ -232,14 +221,11 @@ void menuPuestos(MYSQL* conectar) {
 void menuEmpleados(MYSQL* conectar) {
 
     int opcion;
-
     do {
 
         cout << "\n===== EMPLEADOS =====\n";
         cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
-
         opcion = leerEntero("Opcion: ");
-
         switch (opcion) {
 
         case 1: {
@@ -374,14 +360,11 @@ void menuMarcas() {
 
     int opcion;
     Marca m;
-
     do {
 
         cout << "\n===== MARCAS =====\n";
         cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
-
         opcion = leerEntero("Opcion: ");
-
         switch (opcion) {
 
         case 1:
@@ -436,14 +419,11 @@ void menuMarcas() {
 void menuProductos() {
 
     int opcion;
-
     do {
 
         cout << "\n===== PRODUCTOS =====\n";
         cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
-
         opcion = leerEntero("Opcion: ");
-
         switch (opcion) {
 
         case 1: {
@@ -601,15 +581,80 @@ void menuProductos() {
 // ================= PROVEEDORES =================
 
 void menuProveedores(MYSQL* conectar) {
-
     int opcion;
     Proveedor p;
-
     do {
 
         cout << "\n===== PROVEEDORES =====\n";
         cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
+        opcion = leerEntero("Opcion: ");
+        switch (opcion) {
+        case 1: {
+            string prov = leerTexto("Proveedor: ");
+            string nit  = leerTexto("NIT: ");
+            string dir  = leerTexto("Direccion: ");
+            string tel  = leerTexto("Telefono: ");
+            Proveedor tempP(0, prov, nit, dir, tel);
+            tempP.crear(); break;
+        }
+        case 2: p.leer(); break;
+        case 3: {
+            int id = leerEntero("ID: ");
+            Proveedor tempP(id, leerTexto("Proveedor: "), leerTexto("NIT: "),
+                            leerTexto("Direccion: "), leerTexto("Telefono: "));
+            tempP.actualizar(); break;
+        }
+        case 4: {
+            int id = leerEntero("ID: ");
+            Proveedor tempP(id, "", "", "", "");
+            tempP.eliminar(); break;
+        }
+        }
+    } while (opcion != 0);
+}
 
+void menuClientes() {
+    int opcion;
+    Cliente c;
+    do {
+        cout << "\n===== CLIENTES =====\n";
+        cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
+        opcion = leerEntero("Opcion: ");
+        switch (opcion) {
+        case 1: {
+            c = Cliente(0, leerTexto("Nombres: "), leerTexto("Apellidos: "),
+                        leerTexto("NIT: "), leerEntero("Genero (1=M 0=F): "),
+                        leerTexto("Telefono: "), leerTexto("Correo: "), "");
+            c.crear(); break;
+        }
+        case 2: c.leer(); break;
+        case 3: {
+            int id = leerEntero("ID: ");
+            c = Cliente(id, leerTexto("Nombres: "), leerTexto("Apellidos: "),
+                        leerTexto("NIT: "), leerEntero("Genero: "),
+                        leerTexto("Telefono: "), leerTexto("Correo: "), "");
+            c.actualizar(); break;
+        }
+        case 4: {
+            int id = leerEntero("ID: ");
+            c = Cliente(id, "", "", "", 1, "", "", "");
+            c.eliminar(); break;
+        }
+        }
+    } while (opcion != 0);
+}
+
+// ================= MENU VENTAS MAESTRO-DETALLE =================
+
+void menuVentas() {
+    int opcion;
+    do {
+        cout << "\n===== VENTAS =====\n";
+        cout << "1. Nueva Venta\n";
+        cout << "2. Ver todas las Ventas\n";
+        cout << "3. Ver Detalle de una Venta\n";
+        cout << "4. Eliminar Venta\n";
+        cout << "0. Regresar\n";
         opcion = leerEntero("Opcion: ");
 
         switch (opcion) {
@@ -704,17 +749,13 @@ void menuProveedores(MYSQL* conectar) {
         }
 
         }
-
     } while (opcion != 0);
 }
 
-// ================= CLIENTES =================
+// ================= MENU COMPRAS MAESTRO-DETALLE =================
 
-void menuClientes() {
-
+void menuCompras() {
     int opcion;
-    Cliente c;
-
     do {
 
         cout << "\n===== CLIENTES =====\n";
@@ -1155,7 +1196,6 @@ void menuCompras() {
         }
 
         }
-
     } while (opcion != 0);
 }
 
