@@ -147,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Clientes.h" />
+    <ClInclude Include="ComprasMaestroDetalle.h" />
     <ClInclude Include="CONEXION_BD.h" />
     <ClInclude Include="Empleados.h" />
     <ClInclude Include="marca.h" />
