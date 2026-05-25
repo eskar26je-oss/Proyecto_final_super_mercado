@@ -298,9 +298,57 @@ inline void nueva_venta(MYSQL* conectar) {
     cout << "|           NUEVA VENTA                |\n";
     cout << "+--------------------------------------+\n\n";
 
+    // SELECCIONAR CAJERO
+    MYSQL_RES* res_cajeros;
+    MYSQL_ROW  fil_cajero;
+
+    mysql_query(conectar,
+        "SELECT id_empleados, nombres, apellidos FROM empleados ORDER BY id_empleados");
+    res_cajeros = mysql_store_result(conectar);
+
+    cout << "\n+--------------------------------------+\n";
+    cout << "|         SELECCIONAR CAJERO           |\n";
+    cout << "+--------------------------------------+\n";
+
+    while ((fil_cajero = mysql_fetch_row(res_cajeros))) {
+        cout << "  [" << fil_cajero[0] << "] "
+            << fil_cajero[1] << " "
+            << fil_cajero[2] << "\n";
+    }
+
+    mysql_free_result(res_cajeros);
+
+    cout << "\nIngrese ID del cajero: ";
+    cin >> venta.id_empleado;
+    cin.ignore();
+
+    // VERIFICAR QUE EL CAJERO EXISTE
+    MYSQL_RES* res_ver;
+    MYSQL_ROW  fil_ver;
+
+    string q_ver =
+        "SELECT nombres, apellidos FROM empleados WHERE id_empleados = "
+        + to_string(venta.id_empleado);
+
+    mysql_query(conectar, q_ver.c_str());
+    res_ver = mysql_store_result(conectar);
+    fil_ver = mysql_fetch_row(res_ver);
+
+    if (fil_ver == NULL) {
+        cout << "\nERROR: Cajero no encontrado. Operacion cancelada.\n";
+        mysql_free_result(res_ver);
+        system("pause");
+        return;
+    }
+
+    venta.nombre_empleado = string(fil_ver[0]) + " " + string(fil_ver[1]);
+    mysql_free_result(res_ver);
+
+    cout << "\nCajero: " << venta.nombre_empleado << "\n";
+
     // NIT
     string nit;
-    cout << "Ingrese NIT Cliente (o CF): ";
+    cout << "\nIngrese NIT Cliente (o CF): ";
     getline(cin, nit);
 
     if (!validar_nit(nit)) {
@@ -354,16 +402,7 @@ inline void nueva_venta(MYSQL* conectar) {
 
     mysql_free_result(resultado_cliente);
 
-    // NOMBRE EMPLEADO
-    MYSQL_RES* res_emp;
-    MYSQL_ROW  fil_emp;
-    mysql_query(conectar, "SELECT nombres, apellidos FROM empleados WHERE id_empleados = 1");
-    res_emp = mysql_store_result(conectar);
-    fil_emp = mysql_fetch_row(res_emp);
-    venta.nombre_empleado = (fil_emp != NULL)
-        ? string(fil_emp[0]) + " " + string(fil_emp[1])
-        : "Empleado";
-    mysql_free_result(res_emp);
+
 
     // DATOS FACTURA
     venta.id_venta = obtener_proximo_id_venta(conectar);
@@ -371,7 +410,6 @@ inline void nueva_venta(MYSQL* conectar) {
     venta.fecha_ingreso = obtener_fecha_hora();
     venta.no_factura = generar_factura();
     venta.serie = generar_serie();
-    venta.id_empleado = 1;
     venta.total = 0;
 
     cout << "\n+--------------------------------------+\n";
@@ -517,16 +555,9 @@ inline void nueva_venta(MYSQL* conectar) {
     // MOSTRAR FACTURA EN CONSOLA
     imprimir_factura_consola(venta, detalle);
 
-    // OPCION DE IMPRIMIR
-    char imprimir;
-    cout << "Desea imprimir la factura? (s/n): ";
-    cin >> imprimir;
-    cin.ignore();
-
-    if (imprimir == 's' || imprimir == 'S') {
-        guardar_e_imprimir(venta, detalle);
-        cout << "\nEn el Bloc de Notas presiona Ctrl+P para imprimir.\n";
-    }
+    // GENERAR E IMPRIMIR AUTOMATICAMENTE
+    guardar_e_imprimir(venta, detalle);
+    cout << "En el Bloc de Notas presiona Ctrl+P para imprimir.\n";
 
     system("pause");
 }

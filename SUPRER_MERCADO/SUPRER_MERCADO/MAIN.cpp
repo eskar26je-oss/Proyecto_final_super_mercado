@@ -319,6 +319,8 @@ void menuClientes() {
 
 int main() {
 
+    srand((unsigned int)time(0));//esta linea se agrego por tema de facturacion para no repetir el mismo numero de factura.
+
     MYSQL* conectar;
     conectar_bd(conectar);
 
@@ -326,7 +328,16 @@ int main() {
 
     do {
         cout << "\n===== SISTEMA SUPERMERCADO =====\n";
-        cout << "1. Puestos\n2. Empleados\n3. Marcas\n4. Productos\n5. Proveedores\n6. Clientes\n7. Ventas\n0. Salir\n";
+        cout << "  --- Catalogos ---\n";
+        cout << "  1. Puestos\n";
+        cout << "  2. Empleados\n";
+        cout << "  3. Marcas\n";
+        cout << "  4. Productos\n";
+        cout << "  5. Proveedores\n";
+        cout << "  6. Clientes\n";
+        cout << "  --- Maestro-Detalle ---\n";
+        cout << "  7. Ventas y Ventas Detalle\n";
+        cout << "  0. Salir\n";
 
         opcion = leerEntero("Opcion: ");
 
