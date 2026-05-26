@@ -62,25 +62,6 @@ public:
         fecha_ingreso = ObtenerFechaHoraActual();
     }
 
-<<<<<<< HEAD
-    // Setters del Maestro
-    void SetIdCompra(int id) { id_compra = id; }
-    void SetNumeroOrden(int numero) { numero_orden = numero; }
-    void SetProveedor(int id, const string& nombre) {
-        id_proveedor = id;
-        proveedor_nombre = nombre;
-    }
-    void SetFechaOrden(const string& fecha) { fecha_orden = fecha; }
-
-    // Getters del Maestro
-    int GetIdCompra() const { return id_compra; }
-    int GetNumeroOrden() const { return numero_orden; }
-    int GetIdProveedor() const { return id_proveedor; }
-    string GetProveedorNombre() const { return proveedor_nombre; }
-    string GetFechaOrden() const { return fecha_orden; }
-    string GetFechaIngreso() const { return fecha_ingreso; }
-    double GetTotal() const { return total; }
-=======
     // ======= Setters del Maestro =======
     void SetIdCompra(int id) { id_compra = id; }
     void SetNumeroOrden(int numero) { numero_orden = numero; }
@@ -95,19 +76,14 @@ public:
     string GetFechaOrden()      const { return fecha_orden; }
     string GetFechaIngreso()    const { return fecha_ingreso; }
     double GetTotal()           const { return total; }
->>>>>>> 2ac0de173dcd9c09ec72ced277f1da10d0998830
 
-    // Métodos para detalles
+    // ======= Metodos para detalles =======
     void AgregarDetalle(int id_producto, const string& nombre, int cantidad, double precio_unitario) {
         if (cantidad <= 0 || precio_unitario < 0) return;
 
         DetalleCompra detalle;
-<<<<<<< HEAD
-        detalle.id_detalle = detalles.size() + 1;
-=======
         // FIX: cast explícito de size_t a int
         detalle.id_detalle = (int)detalles.size() + 1;
->>>>>>> 2ac0de173dcd9c09ec72ced277f1da10d0998830
         detalle.id_producto = id_producto;
         detalle.nombre_producto = nombre;
         detalle.cantidad = cantidad;
@@ -119,7 +95,7 @@ public:
     }
 
     bool ModificarDetalle(int indice, int cantidad, double precio_unitario) {
-        if (indice < 0 || indice >= detalles.size()) return false;
+        if (indice < 0 || indice >= (int)detalles.size()) return false;
         if (cantidad <= 0 || precio_unitario < 0) return false;
 
         detalles[indice].cantidad = cantidad;
@@ -130,8 +106,7 @@ public:
     }
 
     bool EliminarDetalle(int indice) {
-        if (indice < 0 || indice >= detalles.size()) return false;
-
+        if (indice < 0 || indice >= (int)detalles.size()) return false;
         detalles.erase(detalles.begin() + indice);
         CalcularTotal();
         return true;
@@ -139,20 +114,18 @@ public:
 
     void CalcularTotal() {
         total = 0;
-        for (const auto& detalle : detalles) {
-            total += detalle.subtotal;
-    }
+        for (const auto& d : detalles)
+            total += d.subtotal;
     }
 
     const vector<DetalleCompra>& GetDetalles() const { return detalles; }
-    int GetCantidadDetalles() const { return detalles.size(); }
+    int GetCantidadDetalles() const { return (int)detalles.size(); }
 
     void LimpiarDetalles() {
         detalles.clear();
         total = 0;
     }
 
-    // Validar si la compra está completa
     bool ValidarCompra() const {
         return id_compra > 0 && numero_orden > 0 && id_proveedor > 0 && !detalles.empty();
     }
