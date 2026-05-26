@@ -21,7 +21,8 @@ struct DetalleCompra {
     double subtotal;
 
     DetalleCompra() : id_detalle(0), id_producto(0), cantidad(0),
-                      precio_costo_unitario(0), subtotal(0) {}
+        precio_costo_unitario(0), subtotal(0) {
+    }
 };
 
 // Clase para gestionar Compras Maestro-Detalle
@@ -36,17 +37,20 @@ private:
     vector<DetalleCompra> detalles;
     double total;
 
+    // FIX: usar localtime_s en lugar de localtime
     string ObtenerFechaActual() {
         time_t now = time(0);
-        struct tm tstruct = *localtime(&now);
+        struct tm tstruct;
+        localtime_s(&tstruct, &now);          // <-- corregido
         char buffer[20];
         strftime(buffer, sizeof(buffer), "%Y-%m-%d", &tstruct);
         return string(buffer);
     }
 
     string ObtenerFechaHoraActual() {
-        time_t now = time(0);
-        struct tm tstruct = *localtime(&now);
+        time_t t = time(nullptr);
+        struct tm tstruct;
+        localtime_s(&tstruct, &t);            // <-- corregido
         char buffer[30];
         strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tstruct);
         return string(buffer);
@@ -58,6 +62,7 @@ public:
         fecha_ingreso = ObtenerFechaHoraActual();
     }
 
+<<<<<<< HEAD
     // Setters del Maestro
     void SetIdCompra(int id) { id_compra = id; }
     void SetNumeroOrden(int numero) { numero_orden = numero; }
@@ -75,13 +80,34 @@ public:
     string GetFechaOrden() const { return fecha_orden; }
     string GetFechaIngreso() const { return fecha_ingreso; }
     double GetTotal() const { return total; }
+=======
+    // ======= Setters del Maestro =======
+    void SetIdCompra(int id) { id_compra = id; }
+    void SetNumeroOrden(int numero) { numero_orden = numero; }
+    void SetProveedor(int id, const string& nombre) { id_proveedor = id; proveedor_nombre = nombre; }
+    void SetFechaOrden(const string& fecha) { fecha_orden = fecha; }
+
+    // ======= Getters del Maestro =======
+    int    GetIdCompra()        const { return id_compra; }
+    int    GetNumeroOrden()     const { return numero_orden; }
+    int    GetIdProveedor()     const { return id_proveedor; }
+    string GetProveedorNombre() const { return proveedor_nombre; }
+    string GetFechaOrden()      const { return fecha_orden; }
+    string GetFechaIngreso()    const { return fecha_ingreso; }
+    double GetTotal()           const { return total; }
+>>>>>>> 2ac0de173dcd9c09ec72ced277f1da10d0998830
 
     // Métodos para detalles
     void AgregarDetalle(int id_producto, const string& nombre, int cantidad, double precio_unitario) {
         if (cantidad <= 0 || precio_unitario < 0) return;
 
         DetalleCompra detalle;
+<<<<<<< HEAD
         detalle.id_detalle = detalles.size() + 1;
+=======
+        // FIX: cast explícito de size_t a int
+        detalle.id_detalle = (int)detalles.size() + 1;
+>>>>>>> 2ac0de173dcd9c09ec72ced277f1da10d0998830
         detalle.id_producto = id_producto;
         detalle.nombre_producto = nombre;
         detalle.cantidad = cantidad;
@@ -128,27 +154,27 @@ public:
 
     // Validar si la compra está completa
     bool ValidarCompra() const {
-        return id_compra > 0 && numero_orden > 0 && id_proveedor > 0 && detalles.size() > 0;
+        return id_compra > 0 && numero_orden > 0 && id_proveedor > 0 && !detalles.empty();
     }
 
     // ======= Mostrar resumen en pantalla =======
     void MostrarResumen() const {
         cout << "\n---------- RESUMEN DE COMPRA ----------\n";
-        cout << "ID Compra  : " << id_compra     << "\n";
-        cout << "No. Orden  : " << numero_orden   << "\n";
+        cout << "ID Compra  : " << id_compra << "\n";
+        cout << "No. Orden  : " << numero_orden << "\n";
         cout << "Proveedor  : [" << id_proveedor << "] " << proveedor_nombre << "\n";
-        cout << "Fecha      : " << fecha_orden    << "\n";
+        cout << "Fecha      : " << fecha_orden << "\n";
         cout << "---------------------------------------\n";
         cout << "No. | Producto                | Cant | Costo   | Subtotal\n";
         cout << "----+-------------------------+------+---------+---------\n";
         for (int i = 0; i < (int)detalles.size(); i++) {
             const DetalleCompra& d = detalles[i];
             cout << " " << (i + 1) << "  | "
-                 << d.nombre_producto.substr(0, 23)
-                 << string(max(0, 23 - (int)d.nombre_producto.size()), ' ')
-                 << " | " << d.cantidad
-                 << "    | Q" << fixed << setprecision(2) << d.precio_costo_unitario
-                 << " | Q" << d.subtotal << "\n";
+                << d.nombre_producto.substr(0, 23)
+                << string(max(0, 23 - (int)d.nombre_producto.size()), ' ')
+                << " | " << d.cantidad
+                << "    | Q" << fixed << setprecision(2) << d.precio_costo_unitario
+                << " | Q" << d.subtotal << "\n";
         }
         cout << "---------------------------------------\n";
         cout << "TOTAL: Q" << fixed << setprecision(2) << total << "\n";
@@ -218,13 +244,13 @@ public:
         if (!con) return;
 
         string q = "SELECT c.id_compras, c.no_de_orden, c.fecha_orden, "
-                   "p.proveedor, "
-                   "SUM(cd.cantidad * cd.precio_costo_unitario) AS total "
-                   "FROM compras c "
-                   "JOIN proveedores p ON c.id_proveedor = p.id_proveedor "
-                   "LEFT JOIN compras_detalle cd ON c.id_compras = cd.id_compra "
-                   "GROUP BY c.id_compras "
-                   "ORDER BY c.id_compras DESC";
+            "p.proveedor, "
+            "SUM(cd.cantidad * cd.precio_costo_unitario) AS total "
+            "FROM compras c "
+            "JOIN proveedores p ON c.id_proveedor = p.id_proveedor "
+            "LEFT JOIN compras_detalle cd ON c.id_compras = cd.id_compra "
+            "GROUP BY c.id_compras "
+            "ORDER BY c.id_compras DESC";
 
         if (mysql_query(con, q.c_str()) == 0) {
             MYSQL_RES* res = mysql_store_result(con);
@@ -234,12 +260,13 @@ public:
             cout << "----+-------+------------+----------------------+-------\n";
             while ((fila = mysql_fetch_row(res))) {
                 cout << fila[0] << " | " << fila[1]
-                     << " | " << fila[2] << " | "
-                     << string(fila[3]).substr(0, 20) << " | Q"
-                     << (fila[4] ? fila[4] : "0.00") << "\n";
+                    << " | " << fila[2] << " | "
+                    << string(fila[3]).substr(0, 20) << " | Q"
+                    << (fila[4] ? fila[4] : "0.00") << "\n";
             }
             mysql_free_result(res);
-        } else {
+        }
+        else {
             cout << "Error: " << mysql_error(con) << "\n";
         }
 
@@ -254,10 +281,10 @@ public:
         if (!con) return;
 
         string q = "SELECT p.productos, cd.cantidad, cd.precio_costo_unitario, "
-                   "(cd.cantidad * cd.precio_costo_unitario) AS subtotal "
-                   "FROM compras_detalle cd "
-                   "JOIN productos p ON cd.id_producto = p.idproductos "
-                   "WHERE cd.id_compra = " + to_string(id_c);
+            "(cd.cantidad * cd.precio_costo_unitario) AS subtotal "
+            "FROM compras_detalle cd "
+            "JOIN productos p ON cd.id_producto = p.idproductos "
+            "WHERE cd.id_compra = " + to_string(id_c);
 
         if (mysql_query(con, q.c_str()) == 0) {
             MYSQL_RES* res = mysql_store_result(con);
@@ -265,12 +292,13 @@ public:
             cout << "\n--- Detalle de Compra ID: " << id_c << " ---\n";
             while ((fila = mysql_fetch_row(res))) {
                 cout << "Producto: " << fila[0]
-                     << " | Cant: " << fila[1]
-                     << " | Costo: Q" << fila[2]
-                     << " | Subtotal: Q" << fila[3] << "\n";
+                    << " | Cant: " << fila[1]
+                    << " | Costo: Q" << fila[2]
+                    << " | Subtotal: Q" << fila[3] << "\n";
             }
             mysql_free_result(res);
-        } else {
+        }
+        else {
             cout << "Error: " << mysql_error(con) << "\n";
         }
 
