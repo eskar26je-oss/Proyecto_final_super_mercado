@@ -64,7 +64,7 @@ void conectar_bd(MYSQL*& conectar) {
         conectar,
         "localhost",
         "root",
-        "0111",
+        "MySQL2026#",
         "super_mercado_profin",
         3306,
         NULL,
