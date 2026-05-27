@@ -518,7 +518,7 @@ void menuClientes() {
 
 // ================= COMPRAS =================
 
-void menuCompras() {
+void menuCompras(MYSQL* conectar) {
     int opcion;
     do {
         cout << "\n===== COMPRAS =====\n";
@@ -533,92 +533,23 @@ void menuCompras() {
 
         case 1: {
             ComprasMaestroDetalle compra;
-
-            cout << "\n--- NUEVA COMPRA ---\n";
-
-            compra.SetIdCompra(leerEnteroPositivo("ID de la compra     : "));
-            compra.SetNumeroOrden(leerEnteroPositivo("No. de orden        : "));
-
-            string fechaO = leerTextoValidado(
-                "Fecha orden (YYYY-MM-DD): ",
-                validar_fecha,
-                "Formato YYYY-MM-DD invalido"
-            );
-            compra.SetFechaOrden(fechaO);
-
-            int idProv = leerEnteroPositivo("ID del proveedor    : ");
-            string nomProv = leerTexto("Nombre del proveedor: ");
-            compra.SetProveedor(idProv, nomProv);
-
-            int opDet;
-            do {
-                cout << "\n--- DETALLE DE COMPRA ---\n";
-                cout << "1. Agregar producto\n";
-                cout << "2. Modificar linea\n";
-                cout << "3. Eliminar linea\n";
-                cout << "4. Ver resumen\n";
-                cout << "5. Guardar compra\n";
-                cout << "0. Cancelar\n";
-                opDet = leerEntero("Opcion: ");
-
-                switch (opDet) {
-
-                case 1: {
-                    int    idProd = leerEnteroPositivo("ID producto    : ");
-                    string nomProd = leerTexto("Nombre producto: ");
-                    int    cant = leerEnteroPositivo("Cantidad       : ");
-                    double costo = leerDecimalPositivo("Precio de costo: ");
-                    compra.AgregarDetalle(idProd, nomProd, cant, costo);
-                    cout << "Producto agregado. Total: Q"
-                        << fixed << setprecision(2) << compra.GetTotal() << "\n";
-                    break;
-                }
-
-                case 2: {
-                    compra.MostrarResumen();
-                    int idx = leerEnteroPositivo("Linea a modificar: ") - 1;
-                    int cant = leerEnteroPositivo("Nueva cantidad   : ");
-                    double co = leerDecimalPositivo("Nuevo costo      : ");
-                    cout << (compra.ModificarDetalle(idx, cant, co)
-                        ? "Linea modificada.\n" : "Indice invalido.\n");
-                    break;
-                }
-
-                case 3: {
-                    compra.MostrarResumen();
-                    int idx = leerEnteroPositivo("Linea a eliminar: ") - 1;
-                    cout << (compra.EliminarDetalle(idx)
-                        ? "Linea eliminada.\n" : "Indice invalido.\n");
-                    break;
-                }
-
-                case 4:
-                    compra.MostrarResumen();
-                    break;
-
-                case 5:
-                    compra.MostrarResumen();
-                    compra.GuardarEnBD();
-                    opDet = 0;
-                    break;
-                }
-            } while (opDet != 0);
+            compra.nuevaCompra(conectar);
             break;
         }
 
         case 2:
-            ComprasMaestroDetalle::ConsultarCompras();
+            ComprasMaestroDetalle::consultarCompras(conectar);
             break;
 
         case 3: {
             int id = leerEnteroPositivo("ID de la compra: ");
-            ComprasMaestroDetalle::ConsultarDetalleCompra(id);
+            ComprasMaestroDetalle::consultarDetalle(conectar, id);
             break;
         }
 
         case 4: {
             int id = leerEnteroPositivo("ID compra a eliminar: ");
-            ComprasMaestroDetalle::EliminarCompra(id);
+            ComprasMaestroDetalle::eliminarCompra(conectar, id);
             break;
         }
 
@@ -660,7 +591,7 @@ int main() {
         case 4: menuProductos();           break;
         case 5: menuProveedores(conectar); break;
         case 6: menuClientes();            break;
-        case 7: menuCompras();             break;
+        case 7: menuCompras(conectar);             break;
         }
     } while (opcion != 0);
 
