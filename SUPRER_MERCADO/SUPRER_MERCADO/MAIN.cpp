@@ -4,6 +4,7 @@
 #include <limits>
 #include <string>
 #include <iomanip>
+#include <ctime>
 #include <mysql.h>
 
 #include "CONEXION_BD.h"
@@ -562,22 +563,20 @@ void menuCompras(MYSQL* conectar) {
 
 int main() {
 
-    srand((unsigned int)time(0));//esta linea se agrego por tema de facturacion para no repetir el mismo numero de factura.
+    srand((unsigned int)time(0));
 
-    MYSQL* conectar;
-    conectar_bd(conectar);
+    ConexionBD cn;
+    cn.abrir_conexion();
+    MYSQL* conectar = cn.get_conexion();
+
+    if (!conectar) {
+        cout << "No se pudo establecer la conexion. Saliendo.\n";
+        return 1;
+    }
 
     int opcion;
     do {
         cout << "\n===== SISTEMA SUPERMERCADO =====\n";
-        cout << "1. Puestos\n";
-        cout << "2. Empleados\n";
-        cout << "3. Marcas\n";
-        cout << "4. Productos\n";
-        cout << "5. Proveedores\n";
-        cout << "6. Clientes\n";
-        cout << "7. Compras\n";
-        cout << "0. Salir\n";
         cout << "  --- Catalogos ---\n";
         cout << "  1. Puestos\n";
         cout << "  2. Empleados\n";
@@ -587,8 +586,8 @@ int main() {
         cout << "  6. Clientes\n";
         cout << "  --- Maestro-Detalle ---\n";
         cout << "  7. Ventas y Ventas Detalle\n";
+        cout << "  8. Compras\n";
         cout << "  0. Salir\n";
-
         opcion = leerEntero("Opcion: ");
 
         switch (opcion) {
@@ -598,10 +597,8 @@ int main() {
         case 4: menuProductos();           break;
         case 5: menuProveedores(conectar); break;
         case 6: menuClientes();            break;
-        case 7: menuCompras(conectar);             break;
-        case 6: menuClientes(); break;
-        case 7: menu_ventas(conectar); break;
-            
+        case 7: menu_ventas(conectar);     break;
+        case 8: menuCompras(conectar);     break;
         }
     } while (opcion != 0);
 

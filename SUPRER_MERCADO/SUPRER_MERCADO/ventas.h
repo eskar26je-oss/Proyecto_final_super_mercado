@@ -9,60 +9,9 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#include "validaciones.h"
 
 using namespace std;
-
-// ================= VALIDAR NOMBRE =================
-
-inline bool validar_nombre(string texto) {
-    if (texto.empty()) { cout << "\nERROR: Campo obligatorio\nEjemplo: Juan Perez\n"; return false; }
-    if (texto.length() > 60) { cout << "\nERROR: Maximo 60 caracteres\n"; return false; }
-    for (int i = 0; i < texto.length(); i++) {
-        if (!isalpha(texto[i]) && texto[i] != ' ') { cout << "\nERROR: Solo letras y espacios\n"; return false; }
-    }
-    return true;
-}
-
-// ================= VALIDAR TELEFONO =================
-
-inline bool validar_telefono(string telefono) {
-    if (telefono.empty()) { cout << "\nERROR: Campo obligatorio\nEjemplo: 55112233\n"; return false; }
-    if (telefono.length() != 8) { cout << "\nERROR: Debe tener 8 digitos\n"; return false; }
-    for (int i = 0; i < telefono.length(); i++) {
-        if (!isdigit(telefono[i])) { cout << "\nERROR: Solo numeros\n"; return false; }
-    }
-    return true;
-}
-
-// ================= VALIDAR CORREO =================
-
-inline bool validar_correo(string correo) {
-    if (correo.empty()) { cout << "\nERROR: Campo obligatorio\n"; return false; }
-    if (correo.find('@') == string::npos) { cout << "\nERROR: Falta @\n"; return false; }
-    if (correo.find('.') == string::npos) { cout << "\nERROR: Falta punto .\n"; return false; }
-    if (correo.length() > 100) { cout << "\nERROR: Maximo 100 caracteres\n"; return false; }
-    return true;
-}
-
-// ================= VALIDAR NIT =================
-
-inline bool validar_nit(string nit) {
-    if (nit == "CF" || nit == "cf" || nit == "C/F") return true;
-    if (nit.length() < 4 || nit.length() > 9) {
-        cout << "\nERROR: NIT debe tener entre 4 y 9 caracteres\nEjemplos: 1234567  548796K  CF\n";
-        return false;
-    }
-    for (int i = 0; i < nit.length(); i++) {
-        if (i == nit.length() - 1 && (nit[i] == 'K' || nit[i] == 'k')) return true;
-        if (!isdigit(nit[i])) {
-            if (!(i == nit.length() - 1 && (nit[i] == 'K' || nit[i] == 'k'))) {
-                cout << "\nERROR: NIT invalido\nEjemplos: 1234567  548796K  CF\n";
-                return false;
-            }
-        }
-    }
-    return true;
-}
 
 // ================= FECHA =================
 
@@ -119,30 +68,28 @@ inline long long obtener_proximo_id_detalle(MYSQL* conectar) {
 // ================= STRUCTS =================
 
 struct DetalleVenta {
-    int id_producto;
-    string nombre_producto;
-    int cantidad;
-    double precio;
-    double subtotal;
+    int id_producto = 0;
+    string nombre_producto = "";
+    int cantidad = 0;
+    double precio = 0.0;
+    double subtotal = 0.0;
 };
 
 struct Venta {
-    int id_venta;
-    int no_factura;
-    string serie;
-    string fecha_factura;
-    int id_cliente;
-    string nombre_cliente;
-    string nit_cliente;
-    int id_empleado;
-    string nombre_empleado;
-    string fecha_ingreso;
-    double total;
+    int id_venta = 0;
+    int no_factura = 0;
+    string serie = "";
+    string fecha_factura = "";
+    int id_cliente = 0;
+    string nombre_cliente = "";
+    string nit_cliente = "";
+    int id_empleado = 0;
+    string nombre_empleado = "";
+    string fecha_ingreso = "";
+    double total = 0.0;
 };
 
 // ================= CONSTRUIR LINEAS FACTURA =================
-// Funcion auxiliar que construye las lineas de la factura
-// Se reutiliza tanto para mostrar en consola como para guardar en .txt
 
 inline vector<string> construir_factura(Venta venta, vector<DetalleVenta> detalle) {
 
@@ -150,7 +97,6 @@ inline vector<string> construir_factura(Venta venta, vector<DetalleVenta> detall
 
     const int ANCHO = 54;
 
-    // centrar texto dentro del borde
     auto centrar = [&](string texto) -> string {
         int espacios = (ANCHO - 2 - (int)texto.length()) / 2;
         if (espacios < 0) espacios = 0;
@@ -163,7 +109,6 @@ inline vector<string> construir_factura(Venta venta, vector<DetalleVenta> detall
         return linea;
         };
 
-    // separador
     auto separador = [&]() -> string {
         string s = "+";
         for (int i = 0; i < ANCHO; i++) s += "-";
@@ -171,9 +116,7 @@ inline vector<string> construir_factura(Venta venta, vector<DetalleVenta> detall
         return s;
         };
 
-    // fila de tabla
     auto fila_tabla = [&](string cod, string prod, string cant, string precio, string sub) -> string {
-        // truncar si es muy largo
         if (prod.length() > 17) prod = prod.substr(0, 17);
         ostringstream ss;
         ss << "| "
@@ -186,15 +129,11 @@ inline vector<string> construir_factura(Venta venta, vector<DetalleVenta> detall
         return ss.str();
         };
 
-    // numero factura con ceros
     ostringstream num_fac;
     num_fac << venta.serie << "-" << setw(4) << setfill('0') << venta.no_factura;
 
-    // total formateado
     ostringstream total_str;
     total_str << "Q" << fixed << setprecision(2) << venta.total;
-
-    // ===== CONSTRUIR LINEAS =====
 
     lineas.push_back(separador());
     lineas.push_back(centrar(""));
@@ -279,7 +218,6 @@ inline void guardar_e_imprimir(Venta venta, vector<DetalleVenta> detalle) {
     cout << "Abriendo Bloc de Notas...\n";
     cout << "Presiona Ctrl+P dentro del Bloc de Notas para imprimir.\n\n";
 
-    // abrir con notepad
     string comando = "notepad " + nombre_archivo;
     system(comando.c_str());
 }
@@ -348,13 +286,13 @@ inline void nueva_venta(MYSQL* conectar) {
 
     // NIT
     string nit;
-    cout << "\nIngrese NIT Cliente (o CF): ";
-    getline(cin, nit);
-
-    if (!validar_nit(nit)) {
-        system("pause");
-        return;
-    }
+    bool nit_valido = false;
+    do {
+        cout << "\nIngrese NIT Cliente (o CF): ";
+        getline(cin, nit);
+        nit_valido = validar_nit(nit);
+        if (!nit_valido) cout << "NIT invalido. Intente de nuevo.\n";
+    } while (!nit_valido);
 
     // BUSCAR CLIENTE
     MYSQL_ROW fila_cliente;
@@ -378,9 +316,9 @@ inline void nueva_venta(MYSQL* conectar) {
 
         string nombres, apellidos, telefono, correo;
 
-        do { cout << "Nombres   : "; getline(cin, nombres); } while (!validar_nombre(nombres));
-        do { cout << "Apellidos : "; getline(cin, apellidos); } while (!validar_nombre(apellidos));
-        do { cout << "Telefono  : "; getline(cin, telefono); } while (!validar_telefono(telefono));
+        do { cout << "Nombres   : "; getline(cin, nombres); } while (!validar_nombre(nombres, 50));
+        do { cout << "Apellidos : "; getline(cin, apellidos); } while (!validar_nombre(apellidos, 50));
+        do { cout << "Telefono  : "; getline(cin, telefono); } while (!validar_telefono_gt(telefono));
         do { cout << "Correo    : "; getline(cin, correo); } while (!validar_correo(correo));
 
         string insertar_cliente =
@@ -401,8 +339,6 @@ inline void nueva_venta(MYSQL* conectar) {
     }
 
     mysql_free_result(resultado_cliente);
-
-
 
     // DATOS FACTURA
     venta.id_venta = obtener_proximo_id_venta(conectar);
