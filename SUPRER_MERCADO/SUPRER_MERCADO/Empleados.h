@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 void mostrar_puestos(MYSQL* conectar);
 
 struct Empleados {
@@ -24,71 +23,41 @@ struct Empleados {
 };
 
 // ================= CREATE =================
-inline void crear_empleados(MYSQL* conectar) {
+inline void crear_empleados(
+	MYSQL* conectar,
+	string nombres,
+	string apellidos,
+	string direccion,
+	string telefono,
+	string cui,
+	int genero,
+	string fecha_nacimiento,
+	int id_puesto,
+	string fecha_inicio,
+	string fecha_ingreso
+) {
 
-	Empleados empleados;
-	char respuesta;
+	string consulta =
+		"INSERT INTO empleados(nombres, apellidos, direccion, telefono, cui, genero, "
+		"fecha_nacimiento, id_puesto, fecha_inicio_de_labores, fecha_ingreso) VALUES('";
 
-	do {
+	consulta += nombres + "','";
+	consulta += apellidos + "','";
+	consulta += direccion + "','";
+	consulta += telefono + "','";
+	consulta += cui + "',";
+	consulta += to_string(genero) + ",'";
+	consulta += fecha_nacimiento + "',";
+	consulta += to_string(id_puesto) + ",'";
+	consulta += fecha_inicio + "','";
+	consulta += fecha_ingreso + "')";
 
-		cout << "Ingrese nombres: ";
-		cin.getline(empleados.nombres, 60);
+	int estado = mysql_query(conectar, consulta.c_str());
 
-		cout << "Ingrese apellidos: ";
-		cin.getline(empleados.apellidos, 60);
-
-		cout << "Ingrese direccion: ";
-		cin.getline(empleados.direccion, 80);
-
-		cout << "Ingrese telefono: ";
-		cin.getline(empleados.telefono, 9);
-
-		cout << "Ingrese CUI: ";
-		cin.getline(empleados.cui, 14);
-
-		cout << "Genero (0/1): ";
-		cin >> empleados.genero;
-		cin.ignore();
-
-		cout << "Fecha nacimiento: ";
-		cin.getline(empleados.fecha_nacimiento, 11);
-
-		mostrar_puestos(conectar);
-
-		cout << "ID puesto: ";
-		cin >> empleados.id_puesto;
-		cin.ignore();
-
-		cout << "Fecha inicio: ";
-		cin.getline(empleados.fecha_inicio_de_labores, 11);
-
-		cout << "Fecha ingreso: ";
-		cin.getline(empleados.fecha_ingreso, 11);
-
-		string consulta =
-			"INSERT INTO empleados(nombres, apellidos, direccion, telefono, cui, genero, "
-			"fecha_nacimiento, id_puesto, fecha_inicio_de_labores, fecha_ingreso) VALUES('";
-
-		consulta += string(empleados.nombres) + "','";
-		consulta += string(empleados.apellidos) + "','";
-		consulta += string(empleados.direccion) + "','";
-		consulta += string(empleados.telefono) + "','";
-		consulta += string(empleados.cui) + "',";
-		consulta += to_string(empleados.genero) + ",'";
-		consulta += string(empleados.fecha_nacimiento) + "',";
-		consulta += to_string(empleados.id_puesto) + ",'";
-		consulta += string(empleados.fecha_inicio_de_labores) + "','";
-		consulta += string(empleados.fecha_ingreso) + "')";
-
-		mysql_query(conectar, consulta.c_str());
-
+	if (estado == 0)
 		cout << "Empleado agregado\n";
-
-		cout << "Otro? (s/n): ";
-		cin >> respuesta;
-		cin.ignore();
-
-	} while (respuesta == 's' || respuesta == 'S');
+	else
+		cout << "Error: " << mysql_error(conectar) << endl;
 }
 
 // ================= READ =================
@@ -99,7 +68,9 @@ inline void mostrar_empleados(MYSQL* conectar) {
 
 	string consulta =
 		"SELECT e.id_empleados, e.nombres, e.apellidos, p.puesto "
-		"FROM empleados e INNER JOIN puestos p ON e.id_puesto = p.id_puestos";
+		"FROM empleados e "
+		"INNER JOIN puestos p "
+		"ON e.id_puesto = p.id_puestos";
 
 	mysql_query(conectar, consulta.c_str());
 
@@ -111,65 +82,45 @@ inline void mostrar_empleados(MYSQL* conectar) {
 			<< " | Nombre: " << fila[1] << " " << fila[2]
 			<< " | Puesto: " << fila[3] << endl;
 	}
+
+	mysql_free_result(resultado);
 }
 
 // ================= UPDATE =================
-inline void actualizar_empleados(MYSQL* conectar) {
-
-	Empleados e;
-
-	cout << "ID: ";
-	cin >> e.id_empleados;
-	cin.ignore();
-
-	cout << "Nuevo nombre: ";
-	cin.getline(e.nombres, 60);
+inline void actualizar_empleados(
+	MYSQL* conectar,
+	int id_empleados,
+	string nombres
+) {
 
 	string consulta =
-		"UPDATE empleados SET nombres='" + string(e.nombres) +
-		"' WHERE id_empleados=" + to_string(e.id_empleados);
+		"UPDATE empleados SET nombres='" +
+		nombres +
+		"' WHERE id_empleados=" +
+		to_string(id_empleados);
 
-	mysql_query(conectar, consulta.c_str());
+	int estado = mysql_query(conectar, consulta.c_str());
 
-	cout << "Actualizado\n";
+	if (estado == 0)
+		cout << "Actualizado\n";
+	else
+		cout << "Error: " << mysql_error(conectar) << endl;
 }
 
 // ================= DELETE =================
-inline void eliminar_empleados(MYSQL* conectar) {
-
-	int id;
-
-	cout << "ID eliminar: ";
-	cin >> id;
+inline void eliminar_empleados(
+	MYSQL* conectar,
+	int id
+) {
 
 	string consulta =
-		"DELETE FROM empleados WHERE id_empleados=" + to_string(id);
+		"DELETE FROM empleados WHERE id_empleados=" +
+		to_string(id);
 
-	mysql_query(conectar, consulta.c_str());
+	int estado = mysql_query(conectar, consulta.c_str());
 
-	cout << "Eliminado\n";
-}
-
-// ================= MENU =================
-inline void menu_empleados(MYSQL* conectar) {
-
-	int opcion;
-
-	do {
-
-		cout << "\n===== EMPLEADOS =====\n";
-		cout << "1. Crear\n2. Mostrar\n3. Actualizar\n4. Eliminar\n5. Salir\n";
-		cout << "Opcion: ";
-		cin >> opcion;
-		cin.ignore();
-
-		switch (opcion) {
-
-		case 1: crear_empleados(conectar); break;
-		case 2: mostrar_empleados(conectar); break;
-		case 3: actualizar_empleados(conectar); break;
-		case 4: eliminar_empleados(conectar); break;
-		}
-
-	} while (opcion != 5);
+	if (estado == 0)
+		cout << "Eliminado\n";
+	else
+		cout << "Error: " << mysql_error(conectar) << endl;
 }
