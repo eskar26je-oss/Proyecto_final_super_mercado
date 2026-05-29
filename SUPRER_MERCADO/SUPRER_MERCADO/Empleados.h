@@ -105,8 +105,8 @@ inline void actualizar_empleados(
 		cout << "Actualizado\n";
 	else
 		cout << "Error: " << mysql_error(conectar) << endl;
-}
-
+}	
+	
 // ================= DELETE =================
 inline void eliminar_empleados(
 	MYSQL* conectar,

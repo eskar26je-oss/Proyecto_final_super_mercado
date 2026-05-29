@@ -4,7 +4,7 @@
 #include <limits>
 #include <string>
 #include <mysql.h>
-
+#include "CONEXION_BD.h"
 #include "puestos.h"
 #include "empleados.h"
 #include "marca.h"
@@ -60,6 +60,29 @@ double leerDecimal(string mensaje) {
 
     limpiarBuffer();
     return valor;
+}
+
+int leerGenero(string mensaje) {
+    string entrada;
+    int valor;
+
+    do {
+        
+        cout << mensaje;
+        getline(cin, entrada);
+
+        
+        if (!entrada.empty() && (entrada == "0" || entrada == "1")) {
+            valor = stoi(entrada); 
+            if (validar_genero(valor)) {
+                return valor;
+            }
+        }
+
+        
+        cout << "Ingrese un numero valido (1=M 0=F)\n";
+
+    } while (true);
 }
 
 // ================= VALIDACIONES =================
@@ -133,8 +156,8 @@ void conectar_bd(MYSQL*& conectar) {
         conectar,
         "localhost",
         "root",
-        "MySQL2026#",
-        "super_mercado_profin",
+        "root08",
+        "super_mercado",
         3306,
         NULL,
         0
@@ -174,7 +197,7 @@ void menuPuestos(MYSQL* conectar) {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Nombre invalido"
+                "Nombre invalido, debe tener entre 2 y 50 caracteres(letras) "
             );
 
             crear_puestos(conectar, puesto);
@@ -196,7 +219,7 @@ void menuPuestos(MYSQL* conectar) {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Nombre invalido"
+                "Nombre invalido, debe tener entre 2 y 50 caracteres(letras) "
             );
 
             actualizar_puestos(
@@ -247,7 +270,7 @@ void menuEmpleados(MYSQL* conectar) {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Nombre invalido"
+                "Nombre invalido, debe tener entre 2 y 50 caracteres(letras) "
             );
 
             string apellidos = leerTextoValidado(
@@ -255,7 +278,7 @@ void menuEmpleados(MYSQL* conectar) {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Apellido invalido"
+                "Apellido invalido, debe tener entre 2 y 50 caracteres(letras) "
             );
 
             string direccion = leerTextoValidado(
@@ -263,29 +286,29 @@ void menuEmpleados(MYSQL* conectar) {
                 [](string t) {
                     return validar_direccion(t, 100);
                 },
-                "Direccion invalida"
+                "Direccion invalida, por favor ingrese una direccion valida "
             );
 
             string telefono = leerTextoValidado(
                 "Telefono: ",
                 validar_telefono_gt,
-                "Telefono invalido"
+                "Telefono invalido, debe tener 8 caracteres numericos "
             );
 
             string cui = leerTextoValidado(
                 "CUI: ",
                 validar_cui,
-                "CUI invalido"
+                "CUI invalido, debe tener 13 caracteres numericos "
             );
 
-            int genero = leerEntero(
+            int genero = leerGenero(
                 "Genero (1=M 0=F): "
             );
 
             string fecha_nacimiento = leerTextoValidado(
                 "Fecha nacimiento: ",
                 validar_fecha,
-                "Fecha invalida"
+                "Fecha invalida, debe tener el formato AAAA-MM-DD"
             );
 
             mostrar_puestos(conectar);
@@ -297,13 +320,13 @@ void menuEmpleados(MYSQL* conectar) {
             string fecha_inicio = leerTextoValidado(
                 "Fecha inicio labores: ",
                 validar_fecha,
-                "Fecha invalida"
+                "Fecha invalida, debe tener el formato AAAA-MM-DD"
             );
 
             string fecha_ingreso = leerTextoValidado(
                 "Fecha ingreso: ",
                 validar_fecha,
-                "Fecha invalida"
+                "Fecha invalida, debe tener el formato AAAA-MM-DD"
             );
 
             crear_empleados(
@@ -329,22 +352,105 @@ void menuEmpleados(MYSQL* conectar) {
             break;
 
         case 3: {
+            mostrar_empleados(conectar);
 
-            int id = leerEnteroPositivo("ID: ");
+            int id = leerEnteroPositivo("Ingrese el ID del empleado a modificar: ");
+            int op_sub;
 
-            string nombres = leerTextoValidado(
-                "Nuevo nombre: ",
-                [](string t) {
-                    return validar_nombre(t, 50);
-                },
-                "Nombre invalido"
-            );
+            do {
+                cout << "\n--- Que campo desea modificar? ---\n";
+                cout << "1. Nombres\n";
+                cout << "2. Apellidos\n";
+                cout << "3. Direccion\n";
+                cout << "4. Telefono\n";
+                cout << "5. CUI\n";
+                cout << "6. Genero\n";
+                cout << "7. Fecha de Nacimiento\n";
+                cout << "8. ID Puesto\n";
+                cout << "9. Fecha Inicio de Labores\n";
+                cout << "0. Regresar al menu anterior\n";
 
-            actualizar_empleados(
-                conectar,
-                id,
-                nombres
-            );
+                op_sub = leerEntero("Seleccione una opcion: ");
+                limpiarBuffer(); 
+
+                string consulta = "";
+                string campo = "";
+                string nuevo_valor = "";
+                bool es_texto = true;
+
+                switch (op_sub) {
+                case 1:
+                    nuevo_valor = leerTextoValidado("Nuevos Nombres: ", [](string t) { return validar_nombre(t, 50); }, "Nombre invalido");
+                    campo = "nombres";
+                    break;
+                case 2:
+                    nuevo_valor = leerTextoValidado("Nuevos Apellidos: ", [](string t) { return validar_nombre(t, 50); }, "Apellido invalido");
+                    campo = "apellidos";
+                    break;
+                case 3:
+                    nuevo_valor = leerTextoValidado("Nueva Direccion: ", [](string t) { return validar_direccion(t, 100); }, "Direccion invalida");
+                    campo = "direccion";
+                    break;
+                case 4:
+                    nuevo_valor = leerTextoValidado("Nuevo Telefono: ", validar_telefono_gt, "Telefono invalido");
+                    campo = "telefono";
+                    break;
+                case 5:
+                    nuevo_valor = leerTextoValidado("Nuevo CUI: ", validar_cui, "CUI invalido");
+                    campo = "cui";
+                    break;
+                case 6: {
+                    int gen = leerGenero("Nuevo Genero (1=M 0=F): ");
+                    nuevo_valor = to_string(gen);
+                    campo = "genero";
+                    es_texto = false;
+                    break;
+                }
+                case 7:
+                    nuevo_valor = leerTextoValidado("Nueva Fecha Nacimiento (YYYY-MM-DD): ", validar_fecha, "Fecha invalida");
+                    campo = "fecha_nacimiento";
+                    break;
+                case 8: {
+                    mostrar_puestos(conectar);
+                    int puesto = leerEnteroPositivo("Nuevo ID Puesto: ");
+                    nuevo_valor = to_string(puesto);
+                    campo = "id_puesto";
+                    es_texto = false;
+                    break;
+                }
+                case 9:
+                    nuevo_valor = leerTextoValidado("Nueva Fecha Inicio Labores (YYYY-MM-DD): ", validar_fecha, "Fecha invalida");
+                    campo = "fecha_inicio_de_labores";
+                    break;
+                case 0:
+                    cout << "Regresando...\n";
+                    break;
+                default:
+                    cout << "Opcion no valida.\n";
+                    break;
+                }
+
+                
+                if (op_sub >= 1 && op_sub <= 9) {
+                    if (es_texto) {
+                        consulta = "UPDATE empleados SET " + campo + " = '" + nuevo_valor + "' WHERE id_empleados = " + to_string(id);
+                    }
+                    else {
+                        consulta = "UPDATE empleados SET " + campo + " = " + nuevo_valor + " WHERE id_empleados = " + to_string(id);
+                    }
+
+                    
+                    int estado = mysql_query(conectar, consulta.c_str());
+
+                    if (estado == 0) {
+                        cout << "Campo " << campo << " actualizado exitosamente\n";
+                    }
+                    else {
+                        cout << "Error al actualizar en la BD: " << mysql_error(conectar) << endl;
+                    }
+                }
+
+            } while (op_sub != 0);
 
             break;
         }
@@ -390,7 +496,7 @@ void menuMarcas() {
                     [](string t) {
                         return validar_nombre(t, 50);
                     },
-                    "Solo letras"
+                    "Solo se permiten letras, entre 2 y 50 caracteres"
                 )
             );
 
@@ -412,7 +518,7 @@ void menuMarcas() {
                     [](string t) {
                         return validar_nombre(t, 50);
                     },
-                    "Solo letras"
+                    "Solo se permiten letras, entre 2 y 50 caracteres"
                 )
             );
 
@@ -454,7 +560,7 @@ void menuProductos() {
                     [](string t) {
                         return validar_nombre(t, 50);
                     },
-                    "Solo letras"
+                    "Solo se permiten letras, entre 2 y 50 caracteres"
                 )
             );
 
@@ -468,7 +574,7 @@ void menuProductos() {
                     [](string t) {
                         return validar_descripcion(t, 200);
                     },
-                    "Descripcion invalida"
+                    "Descripcion invalida, por favor ingrese una descripcion valida"
                 )
             );
 
@@ -478,7 +584,7 @@ void menuProductos() {
                     [](string t) {
                         return validar_imagen(t, 100);
                     },
-                    "Imagen invalida"
+                    "Imagen invalida, por favor ingrese una imagen valida"
                 )
             );
 
@@ -527,7 +633,7 @@ void menuProductos() {
                     [](string t) {
                         return validar_nombre(t, 50);
                     },
-                    "Solo letras"
+                    "Solo se permiten letras, entre 2 y 50 caracteres"
                 )
             );
 
@@ -541,7 +647,7 @@ void menuProductos() {
                     [](string t) {
                         return validar_descripcion(t, 200);
                     },
-                    "Descripcion invalida"
+                    "Descripcion invalida, por favor ingrese una descripcion valida"
                 )
             );
 
@@ -551,7 +657,7 @@ void menuProductos() {
                     [](string t) {
                         return validar_imagen(t, 100);
                     },
-                    "Imagen invalida"
+                    "Imagen invalida, por favor ingrese una imagen valida"
                 )
             );
 
@@ -619,13 +725,13 @@ void menuProveedores(MYSQL* conectar) {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Solo letras"
+                "Solo se permiten letras, entre 2 y 50 caracteres"
             );
 
             string nit = leerTextoValidado(
                 "NIT: ",
                 validar_nit,
-                "NIT invalido"
+                "NIT invalido, por favor ingrese un NIT valido"
             );
 
             string dir = leerTextoValidado(
@@ -633,13 +739,13 @@ void menuProveedores(MYSQL* conectar) {
                 [](string t) {
                     return validar_direccion(t, 100);
                 },
-                "Direccion invalida"
+                "Direccion invalida, por favor ingrese una direccion valida"
             );
 
             string tel = leerTextoValidado(
                 "Telefono: ",
                 validar_telefono_gt,
-                "Telefono invalido"
+                "Telefono invalido, por favor ingrese un telefono valido"
             );
 
             Proveedor tempP(0, prov, nit, dir, tel);
@@ -662,13 +768,13 @@ void menuProveedores(MYSQL* conectar) {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Solo letras"
+                "Solo se permiten letras, entre 2 y 50 caracteres"
             );
 
             string nit = leerTextoValidado(
                 "NIT: ",
                 validar_nit,
-                "NIT invalido"
+                "NIT invalido, por favor ingrese un NIT valido"
             );
 
             string dir = leerTextoValidado(
@@ -676,13 +782,13 @@ void menuProveedores(MYSQL* conectar) {
                 [](string t) {
                     return validar_direccion(t, 100);
                 },
-                "Direccion invalida"
+                "Direccion invalida, por favor ingrese una direccion valida"
             );
 
             string tel = leerTextoValidado(
                 "Telefono: ",
                 validar_telefono_gt,
-                "Telefono invalido"
+                "Telefono invalido, por favor ingrese un telefono valido"
             );
 
             Proveedor tempP(id, prov, nit, dir, tel);
@@ -724,12 +830,14 @@ void menuClientes() {
 
         case 1: {
 
+            limpiarBuffer();
+
             string nom = leerTextoValidado(
                 "Nombres: ",
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Solo letras"
+                "Solo se permiten letras, entre 2 y 50 caracteres"
             );
 
             string ape = leerTextoValidado(
@@ -737,27 +845,30 @@ void menuClientes() {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Solo letras"
+                "Solo se permiten letras, entre 2 y 50 caracteres"
             );
 
             string nit = leerTextoValidado(
                 "NIT: ",
                 validar_nit,
-                "NIT invalido"
+                "NIT invalido, por favor ingrese un NIT valido"
             );
 
-            bool gen = leerEntero("Genero (1=M 0=F): ");
+
+            limpiarBuffer();
+
+            int gen = leerGenero("Genero (1=M 0=F): ");
 
             string tel = leerTextoValidado(
                 "Telefono: ",
                 validar_telefono_gt,
-                "Telefono invalido"
+                "Telefono invalido, por favor ingrese un telefono valido"
             );
 
             string correo = leerTextoValidado(
                 "Correo: ",
                 validar_correo,
-                "Correo invalido"
+                "Correo invalido, por favor ingrese un correo valido "
             );
 
             c = Cliente(0, nom, ape, nit, gen, tel, correo, "");
@@ -774,13 +885,14 @@ void menuClientes() {
         case 3: {
 
             int id = leerEnteroPositivo("ID: ");
+            limpiarBuffer(); 
 
             string nom = leerTextoValidado(
                 "Nombres: ",
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Solo letras"
+                "Solo se permiten letras, entre 2 y 50 caracteres"
             );
 
             string ape = leerTextoValidado(
@@ -788,27 +900,30 @@ void menuClientes() {
                 [](string t) {
                     return validar_nombre(t, 50);
                 },
-                "Solo letras"
+                "Solo se permiten letras, entre 2 y 50 caracteres"
             );
 
             string nit = leerTextoValidado(
                 "NIT: ",
                 validar_nit,
-                "NIT invalido"
+                "NIT invalido, por favor ingrese un NIT valido"
             );
 
-            bool gen = leerEntero("Genero: ");
+            
+            limpiarBuffer();
+
+            int gen = leerGenero("Genero (1=M 0=F): ");
 
             string tel = leerTextoValidado(
                 "Telefono: ",
                 validar_telefono_gt,
-                "Telefono invalido"
+                "Telefono invalido, por favor ingrese un telefono valido"
             );
 
             string correo = leerTextoValidado(
                 "Correo: ",
                 validar_correo,
-                "Correo invalido"
+                "Correo invalido, por favor ingrese un correo valido "
             );
 
             c = Cliente(id, nom, ape, nit, gen, tel, correo, "");

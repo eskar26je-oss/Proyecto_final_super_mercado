@@ -28,8 +28,8 @@ public:
             conectar,
             "localhost",
             "root",
-            "MySQL2026#",
-            "super_mercado_profin",
+            "root08",
+            "super_mercado",
             3306,
             NULL,
             0
