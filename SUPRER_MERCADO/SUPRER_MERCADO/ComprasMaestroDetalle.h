@@ -1,5 +1,5 @@
 #pragma once
-
+#include <limits>
 #include <vector>
 #include <string>
 #include <ctime>
@@ -240,32 +240,46 @@ public:
         }
         mysql_free_result(res_prov);
 
-        cout << "\nIngrese ID del proveedor: ";
-        cin >> id_proveedor;
-        cin.ignore();
-
         // ---- verificar proveedor ----
         MYSQL_RES* res_ver;
         MYSQL_ROW  fil_ver;
 
-        string q_ver =
-            "SELECT proveedor, nit FROM proveedores WHERE id_proveedor = "
-            + to_string(id_proveedor);
+        while (true) {
 
-        mysql_query(conectar, q_ver.c_str());
-        res_ver = mysql_store_result(conectar);
-        fil_ver = mysql_fetch_row(res_ver);
+            cout << "\nIngrese ID del proveedor: ";
 
-        if (fil_ver == NULL) {
-            cout << "\nERROR: Proveedor no encontrado. Operacion cancelada.\n";
+            if (!(cin >> id_proveedor)) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                cout << "\nERROR: Ingrese un numero valido.\n";
+                continue;
+            }
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            string q_ver =
+                "SELECT proveedor, nit FROM proveedores WHERE id_proveedor = "
+                + to_string(id_proveedor);
+
+            mysql_query(conectar, q_ver.c_str());
+
+            res_ver = mysql_store_result(conectar);
+            fil_ver = mysql_fetch_row(res_ver);
+
+            if (fil_ver != NULL) {
+
+                nombre_proveedor = string(fil_ver[0]);
+                nit_proveedor = string(fil_ver[1]);
+
+                mysql_free_result(res_ver);
+                break;
+            }
+
             mysql_free_result(res_ver);
-            system("pause");
-            return;
-        }
 
-        nombre_proveedor = string(fil_ver[0]);
-        nit_proveedor    = string(fil_ver[1]);
-        mysql_free_result(res_ver);
+            cout << "\nERROR: Proveedor no encontrado. Intente nuevamente.\n";
+        }
 
         cout << "\nProveedor: " << nombre_proveedor << "\n";
 
@@ -286,9 +300,20 @@ public:
         do {
             DetalleCompra dc;
 
-            cout << "\nCodigo Producto: ";
-            cin >> dc.id_producto;
-            cin.ignore();
+            while (true) {
+
+                cout << "\nCodigo Producto: ";
+
+                if (cin >> dc.id_producto) {
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+                }
+
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                cout << "\nERROR: Debe ingresar un codigo numerico.\n";
+            }
 
             MYSQL_RES* res_prod;
             MYSQL_ROW  fil_prod;

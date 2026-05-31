@@ -1,4 +1,5 @@
 #pragma once
+#include <limits>
 
 #include <iostream>
 #include <string>
@@ -256,31 +257,44 @@ inline void nueva_venta(MYSQL* conectar) {
 
     mysql_free_result(res_cajeros);
 
-    cout << "\nIngrese ID del cajero: ";
-    cin >> venta.id_empleado;
-    cin.ignore();
-
-    // VERIFICAR QUE EL CAJERO EXISTE
     MYSQL_RES* res_ver;
     MYSQL_ROW  fil_ver;
 
-    string q_ver =
-        "SELECT nombres, apellidos FROM empleados WHERE id_empleados = "
-        + to_string(venta.id_empleado);
+    while (true) {
 
-    mysql_query(conectar, q_ver.c_str());
-    res_ver = mysql_store_result(conectar);
-    fil_ver = mysql_fetch_row(res_ver);
+        cout << "\nIngrese ID del cajero: ";
 
-    if (fil_ver == NULL) {
-        cout << "\nERROR: Cajero no encontrado. Operacion cancelada.\n";
+        if (!(cin >> venta.id_empleado)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\nERROR: Ingrese un numero valido.\n";
+            continue;
+        }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        string q_ver =
+            "SELECT nombres, apellidos FROM empleados WHERE id_empleados = "
+            + to_string(venta.id_empleado);
+
+        mysql_query(conectar, q_ver.c_str());
+
+        res_ver = mysql_store_result(conectar);
+        fil_ver = mysql_fetch_row(res_ver);
+
+        if (fil_ver != NULL) {
+
+            venta.nombre_empleado =
+                string(fil_ver[0]) + " " + string(fil_ver[1]);
+
+            mysql_free_result(res_ver);
+            break;
+        }
+
         mysql_free_result(res_ver);
-        system("pause");
-        return;
-    }
 
-    venta.nombre_empleado = string(fil_ver[0]) + " " + string(fil_ver[1]);
-    mysql_free_result(res_ver);
+        cout << "\nERROR: Cajero no encontrado. Intente nuevamente.\n";
+    }
 
     cout << "\nCajero: " << venta.nombre_empleado << "\n";
 
@@ -288,7 +302,7 @@ inline void nueva_venta(MYSQL* conectar) {
     string nit;
     bool nit_valido = false;
     do {
-        cout << "\nIngrese NIT Cliente (o CF): ";
+        cout << "\nIngrese NIT Cliente (o Cf opcion 1): ";
         getline(cin, nit);
         nit_valido = validar_nit(nit);
         if (!nit_valido) cout << "NIT invalido. Intente de nuevo.\n";
@@ -313,13 +327,55 @@ inline void nueva_venta(MYSQL* conectar) {
     }
     else {
         cout << "\nCliente no encontrado. Registrando...\n\n";
-
         string nombres, apellidos, telefono, correo;
 
-        do { cout << "Nombres   : "; getline(cin, nombres); } while (!validar_nombre(nombres, 50));
-        do { cout << "Apellidos : "; getline(cin, apellidos); } while (!validar_nombre(apellidos, 50));
-        do { cout << "Telefono  : "; getline(cin, telefono); } while (!validar_telefono_gt(telefono));
-        do { cout << "Correo    : "; getline(cin, correo); } while (!validar_correo(correo));
+        // NOMBRES
+        while (true) {
+
+            cout << "Nombres   : ";
+            getline(cin, nombres);
+
+            if (validar_nombre(nombres, 50))
+                break;
+
+            cout << "ERROR: Nombre invalido. Intente de nuevo.\n";
+        }
+
+        // APELLIDOS
+        while (true) {
+
+            cout << "Apellidos : ";
+            getline(cin, apellidos);
+
+            if (validar_nombre(apellidos, 50))
+                break;
+
+            cout << "ERROR: Apellido invalido. Intente de nuevo.\n";
+        }
+
+        // TELEFONO
+        while (true) {
+
+            cout << "Telefono  : ";
+            getline(cin, telefono);
+
+            if (validar_telefono_gt(telefono))
+                break;
+
+            cout << "ERROR: Telefono invalido. Debe contener 8 digitos.\n";
+        }
+
+        // CORREO
+        while (true) {
+
+            cout << "Correo    : ";
+            getline(cin, correo);
+
+            if (validar_correo(correo))
+                break;
+
+            cout << "ERROR: Correo invalido. Intente de nuevo.\n";
+        }
 
         string insertar_cliente =
             "INSERT INTO clientes(nombres,apellidos,nit,genero,telefono,correo_electronico) VALUES('"
@@ -358,9 +414,20 @@ inline void nueva_venta(MYSQL* conectar) {
     do {
         DetalleVenta dv;
 
-        cout << "\nCodigo Producto: ";
-        cin >> dv.id_producto;
-        cin.ignore();
+        while (true) {
+
+            cout << "\nCodigo Producto: ";
+
+            if (cin >> dv.id_producto) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                break;
+            }
+
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "\nERROR: Debe ingresar un codigo numerico.\n";
+        }
 
         MYSQL_ROW fila;
         MYSQL_RES* resultado;
@@ -387,9 +454,20 @@ inline void nueva_venta(MYSQL* conectar) {
             cout << "  Precio  : Q" << fixed << setprecision(2) << dv.precio << "\n";
             cout << "  Stock   : " << existencia << "\n";
 
-            cout << "\nCantidad: ";
-            cin >> dv.cantidad;
-            cin.ignore();
+            while (true) {
+
+                cout << "\nCantidad: ";
+
+                if (cin >> dv.cantidad) {
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+                }
+
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                cout << "\nERROR: Debe ingresar una cantidad numerica.\n";
+            }
 
             if (dv.cantidad <= 0) {
                 cout << "\nERROR: Cantidad invalida.\n";
@@ -411,9 +489,19 @@ inline void nueva_venta(MYSQL* conectar) {
 
         mysql_free_result(resultado);
 
-        cout << "\nAgregar otro producto? (s/n): ";
-        cin >> continuar;
-        cin.ignore();
+        while (true) {
+
+            cout << "\nAgregar otro producto? (s/n): ";
+            cin >> continuar;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            continuar = tolower(continuar);
+
+            if (continuar == 's' || continuar == 'n')
+                break;
+
+            cout << "ERROR: Ingrese solamente 's' o 'n'.\n";
+        }
 
     } while (continuar == 's' || continuar == 'S');
 
