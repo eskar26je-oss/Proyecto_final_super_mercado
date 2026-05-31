@@ -27,7 +27,7 @@ public:
         MYSQL* conexion_temporal = mysql_real_connect(
             conectar,
             "localhost",
-            "root",
+            "root"
             "root08",
             "super_mercado",
             3306,
