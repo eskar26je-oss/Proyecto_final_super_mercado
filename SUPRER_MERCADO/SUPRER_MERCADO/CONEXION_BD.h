@@ -28,7 +28,7 @@ public:
             conectar,
             "localhost",
             "root",
-            "MySQL2026#",
+            "Kennethixpa26@",
             "super_mercado_profin",
             3306,
             NULL,

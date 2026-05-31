@@ -38,7 +38,7 @@ int leerEntero(string mensaje) {
     int valor;
     cout << mensaje;
     while (!(cin >> valor)) {
-        cout << "Ingrese un numero valido: ";
+        cout << "Error, solo se permiten numeros enteros, por favor intente de nuevo: ";
         limpiarBuffer();
     }
     limpiarBuffer();
@@ -49,13 +49,32 @@ double leerDecimal(string mensaje) {
     double valor;
     cout << mensaje;
     while (!(cin >> valor)) {
-        cout << "Ingrese un decimal valido: ";
+        cout << "Error, solo se permiten numeros decimales, por favor intente de nuevo: ";
         limpiarBuffer();
     }
     limpiarBuffer();
     return valor;
 }
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ================= FUNCIÓN CORREGIDA DE GÉNERO =================
+int leerGeneroValidado(string mensaje) {
+    string entrada;
+    int valor;
+    do {
+        cout << mensaje;
+        getline(cin, entrada);
 
+        // Verifica de forma estricta que no esté vacío y que sea exactamente "0" o "1"
+        if (!entrada.empty() && (entrada == "0" || entrada == "1")) {
+            valor = stoi(entrada); // Convierte el texto limpio a número entero
+            return valor;          // Retorna el valor válido de inmediato
+        }
+
+        // Mensaje de error explícito exigido por la catedrática
+        cout << "Error, solo se permite el numero 0 o 1 para el genero, por favor intente de nuevo.\n";
+    } while (true);
+}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ================= ENTRADA CON VALIDACION =================
 
 template <typename Func>
@@ -73,7 +92,7 @@ int leerEnteroPositivo(string mensaje) {
     do {
         valor = leerEntero(mensaje);
         if (validar_entero_positivo(valor)) return valor;
-        cout << "Ingrese un numero positivo\n";
+        cout << "Error, el numero ingresado debe ser positivo (mayor a cero), por favor intente de nuevo.\n";
     } while (true);
 }
 
@@ -82,7 +101,7 @@ double leerDecimalPositivo(string mensaje) {
     do {
         valor = leerDecimal(mensaje);
         if (valor > 0) return valor;
-        cout << "Ingrese un decimal positivo\n";
+        cout << "Error, el valor decimal ingresado debe ser positivo, por favor intente de nuevo.\n";
     } while (true);
 }
 
@@ -166,13 +185,17 @@ void menuEmpleados(MYSQL* conectar) {
                 "CUI: ",
                 validar_cui,
                 "CUI invalido"
+
             );
-            int genero = leerEntero("Genero (1=M 0=F): ");
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------
+            limpiarBuffer();
+            int genero = leerGeneroValidado("Genero (1=Masculino, 0=Femenino): ");
             string fecha_nacimiento = leerTextoValidado(
                 "Fecha nacimiento (YYYY-MM-DD): ",
                 validar_fecha,
                 "Fecha invalida"
             );
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------
             mostrar_puestos(conectar);
             int id_puesto = leerEnteroPositivo("ID Puesto: ");
             string fecha_inicio = leerTextoValidado(
@@ -196,18 +219,110 @@ void menuEmpleados(MYSQL* conectar) {
         case 2:
             mostrar_empleados(conectar);
             break;
-
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------
         case 3: {
-            int id = leerEnteroPositivo("ID: ");
-            string nombres = leerTextoValidado(
-                "Nuevo nombre: ",
-                [](string t) { return validar_nombre(t, 50); },
-                "Nombre invalido"
-            );
-            actualizar_empleados(conectar, id, nombres);
+            mostrar_empleados(conectar);
+
+            int id = leerEnteroPositivo("Ingrese el ID del empleado a modificar: ");
+            int op_sub;
+
+            do {
+                cout << "\n--- Que campo desea modificar? ---\n";
+                cout << "1. Nombres\n";
+                cout << "2. Apellidos\n";
+                cout << "3. Direccion\n";
+                cout << "4. Telefono\n";
+                cout << "5. CUI\n";
+                cout << "6. Genero\n";
+                cout << "7. Fecha de Nacimiento\n";
+                cout << "8. ID Puesto\n";
+                cout << "9. Fecha Inicio de Labores\n";
+                cout << "0. Regresar al menu anterior\n";
+
+                op_sub = leerEntero("Seleccione una opcion: ");
+                limpiarBuffer();
+
+                string consulta = "";
+                string campo = "";
+                string nuevo_valor = "";
+                bool es_texto = true;
+
+                switch (op_sub) {
+                case 1:
+                    nuevo_valor = leerTextoValidado("Nuevos Nombres: ", [](string t) { return validar_nombre(t, 50); }, "Nombre invalido");
+                    campo = "nombres";
+                    break;
+                case 2:
+                    nuevo_valor = leerTextoValidado("Nuevos Apellidos: ", [](string t) { return validar_nombre(t, 50); }, "Apellido invalido");
+                    campo = "apellidos";
+                    break;
+                case 3:
+                    nuevo_valor = leerTextoValidado("Nueva Direccion: ", [](string t) { return validar_direccion(t, 100); }, "Direccion invalida");
+                    campo = "direccion";
+                    break;
+                case 4:
+                    nuevo_valor = leerTextoValidado("Nuevo Telefono: ", validar_telefono_gt, "Telefono invalido");
+                    campo = "telefono";
+                    break;
+                case 5:
+                    nuevo_valor = leerTextoValidado("Nuevo CUI: ", validar_cui, "CUI invalido");
+                    campo = "cui";
+                    break;
+                case 6: {
+                    // Cambiado para usar nuestra función validada estricta
+                    int gen = leerGeneroValidado("Nuevo Genero (1=Masculino 0=Femenino): ");
+                    nuevo_valor = to_string(gen);
+                    campo = "genero";
+                    es_texto = false;
+                    break;
+                }
+                case 7:
+                    nuevo_valor = leerTextoValidado("Nueva Fecha Nacimiento (YYYY-MM-DD): ", validar_fecha, "Fecha invalida");
+                    campo = "fecha_nacimiento";
+                    break;
+                case 8: {
+                    mostrar_puestos(conectar);
+                    int puesto = leerEnteroPositivo("Nuevo ID Puesto: ");
+                    nuevo_valor = to_string(puesto);
+                    campo = "id_puesto";
+                    es_texto = false;
+                    break;
+                }
+                case 9:
+                    nuevo_valor = leerTextoValidado("Nueva Fecha Inicio Labores (YYYY-MM-DD): ", validar_fecha, "Fecha invalida");
+                    campo = "fecha_inicio_de_labores";
+                    break;
+                case 0:
+                    cout << "Regresando...\n";
+                    break;
+                default:
+                    cout << "Opcion no valida.\n";
+                    break;
+                }
+
+                if (op_sub >= 1 && op_sub <= 9) {
+                    if (es_texto) {
+                        consulta = "UPDATE empleados SET " + campo + " = '" + nuevo_valor + "' WHERE id_empleados = " + to_string(id);
+                    }
+                    else {
+                        consulta = "UPDATE empleados SET " + campo + " = " + nuevo_valor + " WHERE id_empleados = " + to_string(id);
+                    }
+
+                    int estado = mysql_query(conectar, consulta.c_str());
+
+                    if (estado == 0) {
+                        cout << "Campo " << campo << " actualizado exitosamente\n";
+                    }
+                    else {
+                        cout << "Error al actualizar en la BD: " << mysql_error(conectar) << endl;
+                    }
+                }
+
+            } while (op_sub != 0);
+
             break;
         }
-
+              //-------------------------------------------------------------------------------------------------------------------------------------------------------------
         case 4: {
             int id = leerEnteroPositivo("ID: ");
             eliminar_empleados(conectar, id);
@@ -437,76 +552,86 @@ void menuClientes() {
         cout << "1. Crear\n2. Ver\n3. Actualizar\n4. Eliminar\n0. Regresar\n";
         opcion = leerEntero("Opcion: ");
         switch (opcion) {
-
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------
         case 1: {
-            string nom = leerTextoValidado(
+            string nombres = leerTextoValidado(
                 "Nombres: ",
                 [](string t) { return validar_nombre(t, 50); },
-                "Solo letras"
+                "Nombre invalido"
             );
-            string ape = leerTextoValidado(
+            string apellidos = leerTextoValidado(
                 "Apellidos: ",
                 [](string t) { return validar_nombre(t, 50); },
-                "Solo letras"
+                "Apellido invalido"
             );
             string nit = leerTextoValidado(
                 "NIT: ",
-                validar_nit,
+                [](string t) { return !t.empty(); }, // Validación simple de no vacío
                 "NIT invalido"
             );
-            int gen = leerEntero("Genero (1=M 0=F): ");
-            string tel = leerTextoValidado(
+
+            limpiarBuffer(); // Limpia antes del getline del género
+            int genero = leerGeneroValidado("Genero (1=Masculino 0=Femenino): ");
+
+            string telefono = leerTextoValidado(
                 "Telefono: ",
                 validar_telefono_gt,
                 "Telefono invalido"
             );
             string correo = leerTextoValidado(
-                "Correo: ",
-                validar_correo,
+                "Correo Electronico: ",
+                [](string t) { return t.find('@') != string::npos && t.find('.') != string::npos; },
                 "Correo invalido"
             );
-            c = Cliente(0, nom, ape, nit, gen, tel, correo, "");
+
+            // Creamos el objeto cliente pasándole los datos limpios (ponemos "" en fecha si tu constructor lo pide)
+            Cliente c(0, nombres, apellidos, nit, genero, telefono, correo, "");
             c.crear();
             break;
         }
 
+              //-------------------------------------------------------------------------------------------------------------------------------------------------------------
         case 2:
             c.leer();
             break;
-
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------
         case 3: {
-            int id = leerEnteroPositivo("ID: ");
-            string nom = leerTextoValidado(
-                "Nombres: ",
+            int id = leerEnteroPositivo("Ingrese el ID del cliente a modificar: ");
+            string nombres = leerTextoValidado(
+                "Nuevos Nombres: ",
                 [](string t) { return validar_nombre(t, 50); },
-                "Solo letras"
+                "Nombre invalido"
             );
-            string ape = leerTextoValidado(
-                "Apellidos: ",
+            string apellidos = leerTextoValidado(
+                "Nuevos Apellidos: ",
                 [](string t) { return validar_nombre(t, 50); },
-                "Solo letras"
+                "Apellido invalido"
             );
             string nit = leerTextoValidado(
-                "NIT: ",
-                validar_nit,
+                "Nuevo NIT: ",
+                [](string t) { return !t.empty(); },
                 "NIT invalido"
             );
-            int gen = leerEntero("Genero: ");
-            string tel = leerTextoValidado(
-                "Telefono: ",
+
+            limpiarBuffer(); // Limpia antes del getline del género
+            int genero = leerGeneroValidado("Nuevo Genero (1=Masculino 0=Femenino): ");
+
+            string telefono = leerTextoValidado(
+                "Nuevo Telefono: ",
                 validar_telefono_gt,
                 "Telefono invalido"
             );
             string correo = leerTextoValidado(
-                "Correo: ",
-                validar_correo,
+                "Nuevo Correo Electronico: ",
+                [](string t) { return t.find('@') != string::npos && t.find('.') != string::npos; },
                 "Correo invalido"
             );
-            c = Cliente(id, nom, ape, nit, gen, tel, correo, "");
+
+            Cliente c(id, nombres, apellidos, nit, genero, telefono, correo, "");
             c.actualizar();
             break;
         }
-
+              //-------------------------------------------------------------------------------------------------------------------------------------------------------------
         case 4: {
             int id = leerEnteroPositivo("ID: ");
             c = Cliente(id, "", "", "", 1, "", "", "");
