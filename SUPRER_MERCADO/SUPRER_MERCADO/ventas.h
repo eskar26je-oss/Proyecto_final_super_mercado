@@ -305,7 +305,7 @@ inline void nueva_venta(MYSQL* conectar) {
         cout << "\nIngrese NIT Cliente (o Cf opcion 1): ";
         getline(cin, nit);
         nit_valido = validar_nit(nit);
-        if (!nit_valido) cout << "NIT invalido. Intente de nuevo.\n";
+        if (!nit_valido) cout << "NIT invalido. Intente de nuevo por favor.\n";
     } while (!nit_valido);
 
     // BUSCAR CLIENTE
